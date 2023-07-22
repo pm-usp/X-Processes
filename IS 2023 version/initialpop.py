@@ -22,16 +22,16 @@ def process_log(log):
     return
 
 
-def initialize_population(island_number, population_size, alphabet, log, xes_log, algo_option, SOLVER_LIMIT):
+def initialize_population(population_size, alphabet, log, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
     population = [initialize_individual(len(alphabet)) for _ in range(population_size)]                                 #TROCAR POR NUMPY? ARRAY do numpy. Ver na biblioteca de genéticos do python qual é a estrutura que ele usa.
     (reference_cromossome, average_enabled_tasks) = create_DFG(log, alphabet)
     for i in range(len(population)):
-        population[i] = create_initial_individual(island_number, population[i], alphabet, reference_cromossome)
+        population[i] = create_initial_individual(population[i], alphabet, reference_cromossome)
         while not pn.is_sound(population[i], alphabet):
             population[i] = initialize_individual(len(alphabet))
-            population[i] = create_initial_individual(island_number, population[i], alphabet, reference_cromossome)
+            population[i] = create_initial_individual(population[i], alphabet, reference_cromossome)
     population[0] = reference_cromossome
-    return (population, fit.evaluate_population(island_number, population, alphabet, xes_log, algo_option, SOLVER_LIMIT), reference_cromossome, average_enabled_tasks)
+    return (population, fit.evaluate_population(population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight), reference_cromossome, average_enabled_tasks)
 
 
 def initialize_individual(number_of_tasks):
@@ -63,7 +63,7 @@ def get_task_id(task, alphabet):
     return alphabet.index(task)                                                                                         
 
 
-def create_initial_individual(island_number, cromossome, alphabet, reference_cromossome):
+def create_initial_individual(cromossome, alphabet, reference_cromossome):
     #create tasks
     for n in range(ran.randint(1, int(len(alphabet) * 1))):
         x1 = ran.randint(1, len(alphabet) - 2)

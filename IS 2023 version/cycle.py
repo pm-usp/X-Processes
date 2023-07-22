@@ -5,7 +5,7 @@ from operator import itemgetter
 import petrinets as pn
 import datetime as dt
 
-def generation(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, xes_log, island_number, algo_option, SOLVER_LIMIT):     
+def generation(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
     auxiliary_population = copy.deepcopy(population)                                                                    
     i = 0                                                                                                               
     while i < len(population):                                                                                          
@@ -17,9 +17,7 @@ def generation(population, reference_cromossome, evaluated_population, crossover
         opr.mutation(auxiliary_population[i], task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome)                     
         opr.mutation(auxiliary_population[i + 1], task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome)                   
         number_of_sound_attempts = 0
-        #print('number_of_sound_attempts',number_of_sound_attempts)
         while not pn.is_sound(auxiliary_population[i], alphabet) or not pn.is_sound(auxiliary_population[i + 1], alphabet):
-            start = dt.datetime.now()
             auxiliary_population[i] = copy.deepcopy(population[chosen_individual_1])
             auxiliary_population[i + 1] = copy.deepcopy(population[chosen_individual_2])
             if number_of_sound_attempts >= int(len(alphabet) * 0.5):
@@ -29,17 +27,16 @@ def generation(population, reference_cromossome, evaluated_population, crossover
                 (auxiliary_population[i], auxiliary_population[i + 1]) = opr.crossover_per_process(crossover_probability, max_perc_of_num_tasks_for_crossover, auxiliary_population[i], auxiliary_population[i + 1])  
                 opr.mutation(auxiliary_population[i], task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome)  
                 opr.mutation(auxiliary_population[i + 1], task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome)  
-            #print('number_of_sound_attempts', number_of_sound_attempts, dt.datetime.now() - start)
-        i = i + 2                                                                                                       
+        i = i + 2
         if (i + 1 == len(population)) and (len(population) % 2 == 1):                                                   
             i = i - 1                                                                                                   
     if elitism_percentage > 0:                                                                                        
-        evaluated_aux_population = fit.evaluate_population(island_number, auxiliary_population, alphabet, xes_log, algo_option, SOLVER_LIMIT)                     
+        evaluated_aux_population = fit.evaluate_population(auxiliary_population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight)
         sorted_evaluated_aux_population = sorted(evaluated_aux_population[1], reverse=True, key=itemgetter(0,4,3))                                                                                                   
         opr.elitism(population, elitism_percentage, sorted_evaluated_aux_population, sorted_evaluated_population, auxiliary_population, evaluated_aux_population, evaluated_population)     
         evaluated_new_population = copy.deepcopy(evaluated_aux_population)
     else:
-        evaluated_new_population = fit.evaluate_population(island_number, auxiliary_population, alphabet, xes_log, algo_option, SOLVER_LIMIT)                         
+        evaluated_new_population = fit.evaluate_population(auxiliary_population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight)
     return (auxiliary_population, evaluated_new_population)                                                             
 
 

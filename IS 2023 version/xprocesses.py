@@ -6,29 +6,53 @@ import fitness as fit
 import islands as isl
 import multiprocessing as mlp
 import datetime as dt
-from datetime import timezone
 import log
 from ast import literal_eval
 from functools import partial
 import petrinets as pn
 import pytz
+import argparse
 
-number_of_islands = 4
-number_of_rounds = 5
-max_number_of_generations = 5000
-max_processing_time = 24 * 60 * 60
+parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
+                                 description= 'X-Processes is an automatic process model discovery method based on genetic algorithms',
+                                 epilog='Example of use: python xprocesses.py -log input-logs/test.xes.gz -isl 4 -rnd 5 -gen 500 -tme 3600 -con 25 -fit 1 -prc 1 -gnl 1 -smp 1')
 
-max_perc_of_num_tasks_for_crossover = 0
-crossover_probability = 0
-task_mutation_probability = 0
-gateway_mutation_probability = 0
-max_perc_of_num_tasks_for_task_mutation = 0
-max_perc_of_num_tasks_for_gateway_mutation = 0
-elitism_percentage = 0
+parser.add_argument('-log', required=True, type=str, help='log (default: None) | (type: .xes.gz)')
+parser.add_argument('-isl', type=int, default=1, help='number of islands (default: 1) | (type: int)')
+parser.add_argument('-rnd', type=int, default=1, help='number of rounds (default: 1) | (type: int)')
+parser.add_argument('-gen', type=int, default=5000, help='stopping criterion - maximum number of generations (default: 5000) | (type: int)')
+parser.add_argument('-tme', type=int, default=86400, help='stopping criterion - maximum execution time (default: 86400) | (type: int)')
+parser.add_argument('-con', type=int, default=25, help='stopping criterion - convergence criterion, defined as the maximum consecutive number of generations with no fitness improvement for the best individual (default: 25) | (type: int)')
+parser.add_argument('-fit', type=int, default=1, help='fitness weight (default: 1) | (type: int)')
+parser.add_argument('-prc', type=int, default=1, help='precision weight (default: 1) | (type: int)')
+parser.add_argument('-gnl', type=int, default=1, help='generalization weight (default: 1) | (type: int)')
+parser.add_argument('-smp', type=int, default=1, help='simplicity weight (default: 1) | (type: int)')
 
-stop_condition = 25
+args = parser.parse_args()
 
-def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, island_sizes, percentage_of_best_individuals_for_migration_all_islands, algo_option, algo_option_changed, SOLVER_LIMIT, full_log, alphabet, log_name, xes_log, max_number_of_generations, max_processing_time, max_perc_of_num_tasks_for_crossover, crossover_probability, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, stop_condition, island_number):     
+inputlog = args.log
+number_of_islands = args.isl
+number_of_rounds = args.rnd
+max_number_of_generations = args.gen
+max_processing_time = args.tme
+stop_condition = args.con
+fitness_weight = args.fit
+precision_weight = args.prc
+generalization_weight = args.gnl
+simplicity_weight = args.smp
+
+# inputlog = 'input-logs/test.xes.gz'
+# number_of_islands = 1
+# number_of_rounds = 1
+# max_number_of_generations = 5000
+# max_processing_time = 86400 #24 * 60 * 60
+# stop_condition = 25
+# fitness_weight = 1
+# precision_weight = 1
+# generalization_weight = 1
+# simplicity_weight = 1
+
+def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, island_sizes, percentage_of_best_individuals_for_migration_all_islands, algo_option, algo_option_changed, SOLVER_LIMIT, full_log, alphabet, log_name, xes_log, max_number_of_generations, max_processing_time, stop_condition, island_number):
     island_start = dt.datetime.now()
     population_size = int(paramenter_set[island_number + 1][0])
     migration_time = int(paramenter_set[island_number + 1][1])
@@ -43,7 +67,8 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
     elitism_percentage = float(paramenter_set[island_number + 1][10])
     island_sizes[island_number] = population_size
     percentage_of_best_individuals_for_migration_all_islands[island_number] = percentage_of_best_individuals_for_migration_per_island
-    (population, evaluated_population, reference_cromossome, average_enabled_tasks) = inp.initialize_population(island_number, population_size, alphabet, full_log, xes_log, algo_option[0], SOLVER_LIMIT)     
+    (population, evaluated_population, reference_cromossome, average_enabled_tasks) = inp.initialize_population(population_size, alphabet, full_log, xes_log, algo_option[0], fitness_weight, precision_weight, generalization_weight, simplicity_weight)
+
     fitness_evolution = []                                                                                              
     (highest_value_and_position, sorted_evaluated_population) = cyc.choose_highest(evaluated_population)                
     lowest_value = cyc.choose_lowest(sorted_evaluated_population)                                                       
@@ -67,8 +92,8 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
 
     rec.record_evolution(log_name, str(round), paramenter_set[island_number + 1], island_number, highest_value_and_position[0], fitness_evolution, alphabet, population[highest_value_and_position[1]], island_start, island_end, island_duration, 0, algo_option[0])  
     for current_generation in range(1, max_number_of_generations):                                                          
-        (population, evaluated_population) = cyc.generation(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, xes_log, island_number, algo_option[0], SOLVER_LIMIT)     
-        (highest_value_and_position, sorted_evaluated_population) = cyc.choose_highest(evaluated_population)            
+        (population, evaluated_population) = cyc.generation(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, xes_log, algo_option[0], fitness_weight, precision_weight, generalization_weight, simplicity_weight)
+        (highest_value_and_position, sorted_evaluated_population) = cyc.choose_highest(evaluated_population)
         lowest_value = cyc.choose_lowest(sorted_evaluated_population)                                                   
         average_value = cyc.calculate_average(evaluated_population)                                                     
         fitness_evolution.append([lowest_value, highest_value_and_position[0][0], average_value, 0, highest_value_and_position[0][1], highest_value_and_position[0][2], highest_value_and_position[0][3], highest_value_and_position[0][4], 0, 0, 0, 0])     
@@ -117,13 +142,13 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
         if (algo_option[0] != 'ALIGNMENT_BASED-ETCONFORMANCE_TOKEN') and (fitness_evolution[current_generation][8] >= (stop_condition * 2 / 5)):
                 algo_option[0] = 'ALIGNMENT_BASED-ETCONFORMANCE_TOKEN'
         if (algo_option[0] == 'ALIGNMENT_BASED-ETCONFORMANCE_TOKEN') and (algo_option_changed[island_number] == 0):
-            evaluated_population = fit.evaluate_population(island_number, population, alphabet, xes_log, algo_option[0], SOLVER_LIMIT)
+            evaluated_population = fit.evaluate_population(population, alphabet, xes_log, algo_option[0], fitness_weight, precision_weight, generalization_weight, simplicity_weight)
             (highest_value_and_position, sorted_evaluated_population) = cyc.choose_highest(evaluated_population)
             for island_n in range(0, number_of_islands): #se funcionar, preciso mudar para fazer isso apenas uma vez
                 isl.set_broadcast_null(island_n, broadcast)  
                 isl.send_individuals_null(island_n, messenger)  
             algo_option_changed[island_number] = 1
-    evaluated_final_population = fit.evaluate_population(island_number, population, alphabet, xes_log, 'ALIGNMENT_BASED-ALIGN_ETCONFORMANCE', SOLVER_LIMIT)
+    evaluated_final_population = fit.evaluate_population(population, alphabet, xes_log, 'ALIGNMENT_BASED-ALIGN_ETCONFORMANCE', fitness_weight, precision_weight, generalization_weight, simplicity_weight)
     (highest_value_and_position, sorted_evaluated_population) = cyc.choose_highest(evaluated_final_population)
     lowest_value = cyc.choose_lowest(sorted_evaluated_population)  
     average_value = cyc.calculate_average(evaluated_population)
@@ -145,8 +170,7 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
     return                                                                                                              
 
 
-if __name__ == '__main__':                                                                                              
-    for log_index in range(5):
+if __name__ == '__main__':
         for round in range(0, number_of_rounds):
             paramenter_set = []
             alphabet = []
@@ -155,7 +179,7 @@ if __name__ == '__main__':
                 for line in isl.nonblank_lines(parameters):
                     paramenter_set.append(line.split(';'))
                 parameters.close()
-            full_log, log_name, xes_log = log.import_log(log_index)                                                                  
+            full_log, log_name, xes_log = log.import_log(inputlog)
             inp.create_alphabet(full_log, alphabet)                                                                         
             inp.process_log(full_log)
             for island in range(number_of_islands):                                                                         
@@ -179,7 +203,7 @@ if __name__ == '__main__':
             broadcast.append(1)                                                                                             
             algo_option.append('TOKEN_BASED-ETCONFORMANCE_TOKEN')
             SOLVER_LIMIT = 1
-            func2 = partial(func, round, broadcast, messenger, island_sizes, percentage_of_best_individuals_for_migration_all_islands, algo_option, algo_option_changed, SOLVER_LIMIT, full_log, alphabet, log_name, xes_log, max_number_of_generations, max_processing_time, max_perc_of_num_tasks_for_crossover, crossover_probability, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, stop_condition)     
-            p.map(func2, island_ids)                                                                                        
+            func2 = partial(func, round, broadcast, messenger, island_sizes, percentage_of_best_individuals_for_migration_all_islands, algo_option, algo_option_changed, SOLVER_LIMIT, full_log, alphabet, log_name, xes_log, max_number_of_generations, max_processing_time, stop_condition)
+            p.map(func2, island_ids)
             plt.plot_evolution_integrated(log_name, str(round), number_of_islands)                                  
             p.close()                                                                                                           
