@@ -14,7 +14,9 @@ def record_evolution(log_name, round, parameters, island_number, highest_values,
     for i in range(len(highest_values)):                                                                                
         highest_values_values = highest_values_values + str(highest_values[i]) + '	'                                   
     fields2a = [str(round) + '	' + str(island_number) + '	' + values_of_parameters + str(current_generation) + '	' + str(island_start) + '	' + str(island_end) + '	' + str(island_duration) + '	' + highest_values_values + algo_option + '	' + str(alphabet) + '	' + str(best_individual) + '	' + log_name + '	' + str(fitness_evolution)]     
-    fields2b = [str(round) + '	' + str(island_number) + '	' + values_of_parameters + str(current_generation) + '	' + str(island_start) + '	' + str(island_end) + '	' + str(island_duration) + '	' + highest_values_values + algo_option]     
+    fields2b = [str(round) + '	' + str(island_number) + '	' + values_of_parameters + str(current_generation) + '	' + str(island_start) + '	' + str(island_end) + '	' + str(island_duration) + '	' + highest_values_values + algo_option]
+
+    log_name = log_name.replace("\\", "-")
 
     if so == 'Windows':
         with open('output-files/' 'Log' + log_name + 'output-spreadsheet-complete.csv', 'a', newline='') as csvfile:

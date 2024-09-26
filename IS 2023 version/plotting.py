@@ -16,7 +16,8 @@ def plot_evolution_per_island(vetor_fitness, log_name, round, island_number):
     plt.xlabel('Generation')                                                                                            
     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=4, ncol=2, mode='expand', borderaxespad=0., prop={'size': 10})  
     plt.ylim([0, 1.02])                                                                                                 
-    plt.draw()                                                                                                          
+    plt.draw()
+    log_name = log_name.replace("\\", "-")
     name = 'output-graphs/graphs/' 'Log' + log_name + '-Round' + round + '-Island' + str(island_number) + '.png'     
     plt.savefig(name)                                                                                                   
     plt.clf()                                                                                                           
@@ -48,7 +49,8 @@ def plot_evolution_integrated(log_name, round, number_of_islands):
     plt.xlabel('Generation')                                                                                            
     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=4, ncol=2, mode='expand', borderaxespad=0., prop={'size': 10})  
     plt.ylim([0, 1.02])                                                                                                 
-    plt.draw()                                                                                                          
+    plt.draw()
+    log_name = log_name.replace("\\", "-")
     name = 'output-graphs/graphs/' 'Log' + log_name + '-Round' + round + '-Integrated' + '.png'    
     plt.savefig(name)                                                                                                   
     plt.clf()                                                                                                           

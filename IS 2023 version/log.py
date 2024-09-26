@@ -1,17 +1,16 @@
 import pandas as pd
-from pm4py.objects.log.importer.xes import importer as xes_importer
-from pm4py.objects.conversion.log import converter as log_converter
+import pm4py
 import re
 
 def is_NaN(num):
     return num != num                                                                                                   
 
 def import_log(inputlog):
-    xes_log = xes_importer.apply(inputlog)
+    xes_log = pm4py.read_xes(inputlog)
     name_inputlog = re.search(r"[^//]*$", inputlog).group(0)
     print('Log name: ', name_inputlog)
-    data1 = log_converter.apply(xes_log, parameters=None, variant=log_converter.Variants.TO_DATA_FRAME)
-    data2 = data1.groupby('case:concept:name')['concept:name'].apply(list).apply(pd.Series).reset_index()                             
+    data1 = pm4py.convert_to_dataframe(xes_log)
+    data2 = data1.groupby('case:concept:name')['concept:name'].apply(list).apply(pd.Series).reset_index()
     print('Number of cases in raw log:', len(data2))
     data2.drop('case:concept:name', axis=1, inplace=True)                                                                         
     data2.drop_duplicates(keep='first', inplace=True)                                                                   
