@@ -1,4 +1,3 @@
-from pm4py.objects.petri_net.utils import petri_utils
 import datetime as dt
 import copy
 import numpy
@@ -138,33 +137,27 @@ def create_petri_net(cromossome, alphabet):
                     if place_to_transition_arcs.count([output_places[i][j], transitions[j]]) == 0:
                         pm4py.objects.petri_net.utils.petri_utils.add_arc_from_to(output_places[i][j], transitions[j], net)
                         place_to_transition_arcs.append([output_places[i][j], transitions[j]])
+
+    net = pm4py.reduce_petri_net_invisibles(net)
+    net, initial_marking, final_marking = pm4py.reduce_petri_net_implicit_places(net, initial_marking, final_marking)
+
     return net, initial_marking, final_marking
 
 
-def create_and_show_pn(cromossome, alphabet, island, generation, log_name, round):
+def create_pn(cromossome, alphabet, island, generation, log_name, round):
     petrinet, initial_marking, final_marking = create_petri_net(cromossome, alphabet)
     log_name = log_name.replace("\\", "-")
     pm4py.write_pnml(petrinet, initial_marking, final_marking, 'petri-nets/' + str(log_name) + '-' + str(round) + '-' + str(island) + '-' + str(generation))
+    return
 
-    # gviz = pn_visualizer.apply(petrinet, initial_marking, final_marking)
-    # pn_visualizer.view(gviz)
-    #
-    # parameters = {pn_visualizer.Variants.WO_DECORATION.value.Parameters.FORMAT: 'svg'}
-    # gviz = pn_visualizer.apply(petrinet, initial_marking, final_marking, parameters=parameters)
-    # pn_visualizer.view(gviz)
-    #
-    # parameters = {pn_visualizer.Variants.WO_DECORATION.value.Parameters.FORMAT: 'svg'}
-    # gviz = pn_visualizer.apply(petrinet, initial_marking, final_marking, parameters=parameters)
-    # pn_visualizer.save(gviz, 'petri-nets/petri-net.svg')
 
+def show_pn(cromossome, alphabet):
+    petrinet, initial_marking, final_marking = create_petri_net(cromossome, alphabet)
+    pm4py.view_petri_net(petrinet, initial_marking, final_marking)
     return
 
 
 def is_sound(cromossome, alphabet):
-    start = dt.datetime.now()
     petrinet, initial_marking, final_marking = create_petri_net(cromossome, alphabet)
-    #print('create_petri_net', dt.datetime.now() - start)
-    start = dt.datetime.now()
     res = pm4py.check_soundness(petrinet, initial_marking, final_marking)
-    #print('woflan', dt.datetime.now() - start)
     return res[0]

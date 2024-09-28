@@ -41,18 +41,8 @@ precision_weight = args.prc
 generalization_weight = args.gnl
 simplicity_weight = args.smp
 
-# inputlog = 'input-logs/test.xes.gz'
-# number_of_islands = 1
-# number_of_rounds = 1
-# max_number_of_generations = 5000
-# max_processing_time = 86400 #24 * 60 * 60
-# stop_condition = 25
-# fitness_weight = 1
-# precision_weight = 1
-# generalization_weight = 1
-# simplicity_weight = 1
 
-def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, island_sizes, percentage_of_best_individuals_for_migration_all_islands, algo_option, algo_option_changed, SOLVER_LIMIT, full_log, alphabet, log_name, xes_log, max_number_of_generations, max_processing_time, stop_condition, island_number):
+def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, island_sizes, percentage_of_best_individuals_for_migration_all_islands, algo_option, algo_option_changed, full_log, alphabet, log_name, xes_log, max_number_of_generations, max_processing_time, stop_condition, island_number):
     island_start = dt.datetime.now()
     population_size = int(paramenter_set[island_number + 1][0])
     migration_time = int(paramenter_set[island_number + 1][1])
@@ -74,7 +64,7 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
     lowest_value = cyc.choose_lowest(sorted_evaluated_population)                                                       
     average_value = cyc.calculate_average(evaluated_population)                                                         
     fitness_evolution.append([lowest_value, highest_value_and_position[0][0], average_value, 0, highest_value_and_position[0][1], highest_value_and_position[0][2], highest_value_and_position[0][3], highest_value_and_position[0][4], 0, 0, 0, 0])     
-    pn.create_and_show_pn(population[highest_value_and_position[1]], alphabet, island_number, 0 , log_name, 0)
+    pn.create_pn(population[highest_value_and_position[1]], alphabet, island_number, 0 , log_name, 0)
     island_end = dt.datetime.now()                                                                                      
     island_duration = island_end - island_start                                                                         
     print('r', round, '%.5f' % highest_value_and_position[0][0], '%.5f' % highest_value_and_position[0][1], '%.5f' % highest_value_and_position[0][2], '%.5f' % highest_value_and_position[0][3], '%.5f' % highest_value_and_position[0][4], '| i', '{:>2}'.format(island_number), '| g', '{:>3}'.format('0'), '| REP', '{:>2}'.format(fitness_evolution[0][8]), '{:>2}'.format(fitness_evolution[0][3]), '{:>2}'.format(fitness_evolution[0][9]), '{:>2}'.format(fitness_evolution[0][10]), '{:>2}'.format(fitness_evolution[0][11]), '|', island_duration, '|', dt.datetime.now(pytz.timezone("Brazil/East")).strftime("%H:%M:%S"), '|', algo_option[0])     
@@ -122,7 +112,7 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
         else:                                                                                                           
             if fitness_evolution[current_generation][7] < fitness_evolution[current_generation - 1][7]:                 
                 fitness_evolution[current_generation][11] = -1                                                          
-        pn.create_and_show_pn(population[highest_value_and_position[1]], alphabet, island_number, current_generation, log_name, round)
+        pn.create_pn(population[highest_value_and_position[1]], alphabet, island_number, current_generation, log_name, round)
         island_end = dt.datetime.now()                                                                                  
         island_duration = island_end - island_start                                                                     
         print('r', round, '%.5f' % highest_value_and_position[0][0], '%.5f' % highest_value_and_position[0][1], '%.5f' % highest_value_and_position[0][2], '%.5f' % highest_value_and_position[0][3], '%.5f' % highest_value_and_position[0][4], '| i', '{:>2}'.format(island_number), '| g', '{:>3}'.format(current_generation), '| REP', '{:>2}'.format(fitness_evolution[current_generation][8]), '{:>2}'.format(fitness_evolution[current_generation][3]), '{:>2}'.format(fitness_evolution[current_generation][9]), '{:>2}'.format(fitness_evolution[current_generation][10]), '{:>2}'.format(fitness_evolution[current_generation][11]), '|', island_duration, '|', dt.datetime.now(pytz.timezone("Brazil/East")).strftime("%H:%M:%S"), '|', algo_option[0])     
@@ -165,9 +155,11 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
         for ini in range(len(previous_plotting)):                                                                       
             plott.write(str(previous_plotting[ini]) + '\n')                                                             
         plott.close()                                                                                                       
-    rec.record_evolution(log_name, str(round), paramenter_set[island_number + 1], island_number, highest_value_and_position[0], fitness_evolution, alphabet, population[highest_value_and_position[1]], island_start, island_end, island_duration, current_generation, 'ALIGNMENT_BASED-ALIGN_ETCONFORMANCE')     
-    print('Final results ==>', 'r', round, '| ISL:', island_number, '| ISL-DURANTION:', island_duration, '| r', round, '| HM:', '%.5f' % highest_value_and_position[0][0], '| FIT:', '%.5f' % highest_value_and_position[0][1], '| PREC:', '%.5f' % highest_value_and_position[0][2], '| GEN:', '%.5f' % highest_value_and_position[0][3], '| SIMP:', '%.5f' % highest_value_and_position[0][4], '| ALPHABET:', alphabet, '| BEST INDIVIDUAL:', population[highest_value_and_position[1]])     
-    return                                                                                                              
+    rec.record_evolution(log_name, str(round), paramenter_set[island_number + 1], island_number, highest_value_and_position[0], fitness_evolution, alphabet, population[highest_value_and_position[1]], island_start, island_end, island_duration, current_generation, 'ALIGNMENT_BASED-ALIGN_ETCONFORMANCE')
+    # pn.show_pn(population[highest_value_and_position[1]], alphabet)
+    print('Final results ==>', 'r', round, '| ISL:', island_number, '| ISL-DURANTION:', island_duration, '| r', round, '| HM:', '%.5f' % highest_value_and_position[0][0], '| FIT:', '%.5f' % highest_value_and_position[0][1], '| PREC:', '%.5f' % highest_value_and_position[0][2], '| GEN:', '%.5f' % highest_value_and_position[0][3], '| SIMP:', '%.5f' % highest_value_and_position[0][4], '| ALPHABET:', alphabet, '| BEST INDIVIDUAL:', population[highest_value_and_position[1]])
+    # rec.record_bestone(island_number, highest_value_and_position[0][0])
+    return
 
 
 if __name__ == '__main__':
@@ -202,8 +194,7 @@ if __name__ == '__main__':
                 algo_option_changed.append(0)
             broadcast.append(1)                                                                                             
             algo_option.append('TOKEN_BASED-ETCONFORMANCE_TOKEN')
-            SOLVER_LIMIT = 1
-            func2 = partial(func, round, broadcast, messenger, island_sizes, percentage_of_best_individuals_for_migration_all_islands, algo_option, algo_option_changed, SOLVER_LIMIT, full_log, alphabet, log_name, xes_log, max_number_of_generations, max_processing_time, stop_condition)
+            func2 = partial(func, round, broadcast, messenger, island_sizes, percentage_of_best_individuals_for_migration_all_islands, algo_option, algo_option_changed, full_log, alphabet, log_name, xes_log, max_number_of_generations, max_processing_time, stop_condition)
             p.map(func2, island_ids)
             plt.plot_evolution_integrated(log_name, str(round), number_of_islands)                                  
             p.close()                                                                                                           
