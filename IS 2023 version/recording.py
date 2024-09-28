@@ -55,33 +55,27 @@ def record_evolution(log_name, round, parameters, island_number, highest_values,
     return
 
 
-def record_bestone(island_number, highest_hm):
-    if not os.path.exists('petri-nets/test.txt'):
-        bestone = open('petri-nets/test.txt', 'w')
+def record_bestone(island_number, highest_hm, generation, bestone_file):
+    if not os.path.exists(bestone_file):
+        bestone = open(bestone_file, 'w')
         bestone.close()
 
-        with open('petri-nets/test.txt', 'w') as bestone:
+        with open(bestone_file, 'w') as bestone:
             bestone.write(str(island_number) + '\n')
             bestone.write(str(highest_hm) + '\n')
+            bestone.write(str(generation) + '\n')
             bestone.close()
     else:
-        with open('petri-nets/test.txt', 'r') as bestone:
-            best_island_number = bestone.readline().strip()
+        with open(bestone_file, 'r') as bestone:
+            best_island = bestone.readline().strip()
             best_highest_hm = bestone.readline().strip()
+            generation_best = bestone.readline().strip()
             bestone.close()
 
         if (highest_hm > float(best_highest_hm)):
-            with open('petri-nets/test.txt', 'w') as bestone:
+            with open(bestone_file, 'w') as bestone:
                 bestone.write(str(island_number) + '\n')
                 bestone.write(str(highest_hm) + '\n')
+                bestone.write(str(generation) + '\n')
                 bestone.close()
-
-    with open('petri-nets/test.txt', 'r') as bestone:
-        best_island_number = bestone.readline().strip()
-        best_highest_hm = bestone.readline()
-        bestone.close()
-
-    print(best_island_number)
-    print(best_highest_hm)
-
     return

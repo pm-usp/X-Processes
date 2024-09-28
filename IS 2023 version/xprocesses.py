@@ -12,6 +12,7 @@ from functools import partial
 import petrinets as pn
 import pytz
 import argparse
+import os
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                  description= 'X-Processes is an automatic process model discovery method based on genetic algorithms',
@@ -42,7 +43,7 @@ generalization_weight = args.gnl
 simplicity_weight = args.smp
 
 
-def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, island_sizes, percentage_of_best_individuals_for_migration_all_islands, algo_option, algo_option_changed, full_log, alphabet, log_name, xes_log, max_number_of_generations, max_processing_time, stop_condition, island_number):
+def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, island_sizes, percentage_of_best_individuals_for_migration_all_islands, algo_option, algo_option_changed, full_log, alphabet, log_name, xes_log, max_number_of_generations, max_processing_time, stop_condition, bestone_file, island_number):
     island_start = dt.datetime.now()
     population_size = int(paramenter_set[island_number + 1][0])
     migration_time = int(paramenter_set[island_number + 1][1])
@@ -158,7 +159,7 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
     rec.record_evolution(log_name, str(round), paramenter_set[island_number + 1], island_number, highest_value_and_position[0], fitness_evolution, alphabet, population[highest_value_and_position[1]], island_start, island_end, island_duration, current_generation, 'ALIGNMENT_BASED-ALIGN_ETCONFORMANCE')
     # pn.show_pn(population[highest_value_and_position[1]], alphabet)
     print('Final results ==>', 'r', round, '| ISL:', island_number, '| ISL-DURANTION:', island_duration, '| r', round, '| HM:', '%.5f' % highest_value_and_position[0][0], '| FIT:', '%.5f' % highest_value_and_position[0][1], '| PREC:', '%.5f' % highest_value_and_position[0][2], '| GEN:', '%.5f' % highest_value_and_position[0][3], '| SIMP:', '%.5f' % highest_value_and_position[0][4], '| ALPHABET:', alphabet, '| BEST INDIVIDUAL:', population[highest_value_and_position[1]])
-    # rec.record_bestone(island_number, highest_value_and_position[0][0])
+    rec.record_bestone(island_number, highest_value_and_position[0][0], current_generation, bestone_file)
     return
 
 
@@ -172,7 +173,10 @@ if __name__ == '__main__':
                     paramenter_set.append(line.split(';'))
                 parameters.close()
             full_log, log_name, xes_log = log.import_log(inputlog)
-            inp.create_alphabet(full_log, alphabet)                                                                         
+            bestone_file = 'petri-nets/' + log_name.replace("\\", "-") + '.txt'
+            if os.path.exists(bestone_file):
+                os.remove(bestone_file)
+            inp.create_alphabet(full_log, alphabet)
             inp.process_log(full_log)
             for island in range(number_of_islands):                                                                         
                 island_ids.append(island)                                                                                   
@@ -194,7 +198,16 @@ if __name__ == '__main__':
                 algo_option_changed.append(0)
             broadcast.append(1)                                                                                             
             algo_option.append('TOKEN_BASED-ETCONFORMANCE_TOKEN')
-            func2 = partial(func, round, broadcast, messenger, island_sizes, percentage_of_best_individuals_for_migration_all_islands, algo_option, algo_option_changed, full_log, alphabet, log_name, xes_log, max_number_of_generations, max_processing_time, stop_condition)
+            func2 = partial(func, round, broadcast, messenger, island_sizes, percentage_of_best_individuals_for_migration_all_islands, algo_option, algo_option_changed, full_log, alphabet, log_name, xes_log, max_number_of_generations, max_processing_time, stop_condition, bestone_file)
             p.map(func2, island_ids)
-            plt.plot_evolution_integrated(log_name, str(round), number_of_islands)                                  
-            p.close()                                                                                                           
+            plt.plot_evolution_integrated(log_name, str(round), number_of_islands)
+            with open(bestone_file, 'r') as bestone:
+                best_island_number = bestone.readline().strip()
+                best_highest_hm = bestone.readline().strip()
+                generation_best = bestone.readline().strip()
+                bestone.close()
+            print('Best island: ', best_island_number)
+            print('Highest HM: ', best_highest_hm)
+            print('Generation: ', generation_best)
+            pn.write_and_show_best_pn(best_island_number, log_name, round, generation_best)
+            p.close()
