@@ -7,5 +7,5 @@
 - Associate article: Marcelo Fantinato, Sarajane Marques Peres, Hajo A. Reijers, X-Processes: Process model discovery with the best balance among fitness, precision, simplicity, and generalization through a genetic algorithm, Information Systems 119, 2023. https://doi.org/10.1016/j.is.2023.102247
 
 # Requirements: 
-- Anaconda/Python (newer versions)
-- PM4PY version 2.2.24
+- Anaconda/Python (newest versions)
+- PM4PY version (newest version)
