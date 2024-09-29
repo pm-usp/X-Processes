@@ -151,15 +151,8 @@ def create_pn(cromossome, alphabet, island, generation, log_name, round):
     return
 
 
-# def show_pn(cromossome, alphabet):
-#     petrinet, initial_marking, final_marking = create_petri_net(cromossome, alphabet)
-#     pm4py.view_petri_net(petrinet, initial_marking, final_marking)
-#     return
-
-
 def write_and_show_best_pn(best_island_number, log_name, round, generation_best):
     petrinet_name = 'petri-nets/temp/' + str(log_name.replace("\\", "-")) + '-' + str(round) + '-' + str(best_island_number) + '-' + str(generation_best) + '.pnml'
-    print(petrinet_name)
     petrinet, initial_marking, final_marking = pm4py.read_pnml(petrinet_name)
     pm4py.write_pnml(petrinet, initial_marking, final_marking, 'petri-nets/best/' + str(log_name.replace("\\", "-")))
     pm4py.view_petri_net(petrinet, initial_marking, final_marking)

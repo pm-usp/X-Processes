@@ -8,6 +8,24 @@ if so == 'Linux':
     import time
     import errno
 
+
+def write_to_locked_file(file_name, data):
+    fileToOpen = open(file_name, 'a')
+    while True:
+        try:
+            fcntl.flock(fileToOpen, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            writer = csv.writer(fileToOpen, dialect='excel', delimiter=',')
+            writer.writerow(data)
+            fcntl.flock(fileToOpen, fcntl.LOCK_UN)
+            fileToOpen.close()
+            break
+        except IOError as e:
+            if e.errno != errno.EAGAIN:
+                raise
+            else:
+                time.sleep(0.01)
+
+
 def record_evolution(log_name, round, parameters, island_number, highest_values, fitness_evolution, alphabet, best_individual, island_start, island_end, island_duration, current_generation, algo_option):     
     values_of_parameters = ''                                                                                           
     for i in range(len(parameters)):                                                                                    
@@ -30,41 +48,38 @@ def record_evolution(log_name, round, parameters, island_number, highest_values,
             writer.writerow(fields2b)
             csvfile.close()
     elif so == 'Linux':
-        fileToOpen = open('output-files/' 'Log' + log_name + 'output-spreadsheet-complete.csv', 'a')
-        while True:
-            try:
-                fcntl.flock(fileToOpen, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                break
-            except IOError as e:
-                if e.errno != errno.EAGAIN:
-                    raise
-                else:
-                    time.sleep(0.01)
-        fcntl.flock(fileToOpen, fcntl.LOCK_UN)
-        fileToOpen = open('output-files/' 'Log' + log_name + 'output-spreadsheet-short.csv', 'a')
-        while True:
-            try:
-                fcntl.flock(fileToOpen, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                break
-            except IOError as e:
-                if e.errno != errno.EAGAIN:
-                    raise
-                else:
-                    time.sleep(0.01)
-        fcntl.flock(fileToOpen, fcntl.LOCK_UN)
+        write_to_locked_file('output-files/Log' + log_name + 'output-spreadsheet-complete.csv', fields2a)
+        write_to_locked_file('output-files/Log' + log_name + 'output-spreadsheet-short.csv', fields2b)
     return
+
+
+def write_locked_bestone(file_name, data):
+    fileToOpen = open(file_name, 'w')
+    while True:
+        try:
+            fcntl.flock(fileToOpen, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            for line in data:
+                fileToOpen.write(line + '\n')
+            fcntl.flock(fileToOpen, fcntl.LOCK_UN)
+            fileToOpen.close()
+            break
+        except IOError as e:
+            if e.errno != errno.EAGAIN:
+                raise
+            else:
+                time.sleep(0.01)
 
 
 def record_bestone(island_number, highest_hm, generation, bestone_file):
     if not os.path.exists(bestone_file):
-        bestone = open(bestone_file, 'w')
-        bestone.close()
-
-        with open(bestone_file, 'w') as bestone:
-            bestone.write(str(island_number) + '\n')
-            bestone.write(str(highest_hm) + '\n')
-            bestone.write(str(generation) + '\n')
-            bestone.close()
+        if so == 'Linux':
+            write_locked_bestone(bestone_file, [str(island_number), str(highest_hm), str(generation)])
+        else:
+            with open(bestone_file, 'w') as bestone:
+                bestone.write(str(island_number) + '\n')
+                bestone.write(str(highest_hm) + '\n')
+                bestone.write(str(generation) + '\n')
+                bestone.close()
     else:
         with open(bestone_file, 'r') as bestone:
             best_island = bestone.readline().strip()
@@ -72,10 +87,39 @@ def record_bestone(island_number, highest_hm, generation, bestone_file):
             generation_best = bestone.readline().strip()
             bestone.close()
 
-        if (highest_hm > float(best_highest_hm)):
-            with open(bestone_file, 'w') as bestone:
-                bestone.write(str(island_number) + '\n')
-                bestone.write(str(highest_hm) + '\n')
-                bestone.write(str(generation) + '\n')
-                bestone.close()
+        if highest_hm > float(best_highest_hm):
+            if so == 'Linux':
+                write_locked_bestone(bestone_file, [str(island_number), str(highest_hm), str(generation)])
+            else:
+                with open(bestone_file, 'w') as bestone:
+                    bestone.write(str(island_number) + '\n')
+                    bestone.write(str(highest_hm) + '\n')
+                    bestone.write(str(generation) + '\n')
+                    bestone.close()
     return
+
+
+# def record_bestone(island_number, highest_hm, generation, bestone_file):
+#     if not os.path.exists(bestone_file):
+#         bestone = open(bestone_file, 'w')
+#         bestone.close()
+#
+#         with open(bestone_file, 'w') as bestone:
+#             bestone.write(str(island_number) + '\n')
+#             bestone.write(str(highest_hm) + '\n')
+#             bestone.write(str(generation) + '\n')
+#             bestone.close()
+#     else:
+#         with open(bestone_file, 'r') as bestone:
+#             best_island = bestone.readline().strip()
+#             best_highest_hm = bestone.readline().strip()
+#             generation_best = bestone.readline().strip()
+#             bestone.close()
+#
+#         if (highest_hm > float(best_highest_hm)):
+#             with open(bestone_file, 'w') as bestone:
+#                 bestone.write(str(island_number) + '\n')
+#                 bestone.write(str(highest_hm) + '\n')
+#                 bestone.write(str(generation) + '\n')
+#                 bestone.close()
+#     return
