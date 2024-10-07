@@ -157,8 +157,7 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
             plott.write(str(previous_plotting[ini]) + '\n')                                                             
         plott.close()                                                                                                       
     rec.record_evolution(log_name, str(round), paramenter_set[island_number + 1], island_number, highest_value_and_position[0], fitness_evolution, alphabet, population[highest_value_and_position[1]], island_start, island_end, island_duration, current_generation, 'ALIGNMENT_BASED-ALIGN_ETCONFORMANCE')
-    # pn.show_pn(population[highest_value_and_position[1]], alphabet)
-    print('Final results ==>', 'r', round, '| ISL:', island_number, '| ISL-DURANTION:', island_duration, '| r', round, '| HM:', '%.5f' % highest_value_and_position[0][0], '| FIT:', '%.5f' % highest_value_and_position[0][1], '| PREC:', '%.5f' % highest_value_and_position[0][2], '| GEN:', '%.5f' % highest_value_and_position[0][3], '| SIMP:', '%.5f' % highest_value_and_position[0][4], '| ALPHABET:', alphabet, '| BEST INDIVIDUAL:', population[highest_value_and_position[1]])
+    print('Final results ==>', 'r', round, '| ISL:', island_number, '| ISL-DURATION:', island_duration, '| r', round, '| HM:', '%.5f' % highest_value_and_position[0][0], '| FIT:', '%.5f' % highest_value_and_position[0][1], '| PREC:', '%.5f' % highest_value_and_position[0][2], '| GEN:', '%.5f' % highest_value_and_position[0][3], '| SIMP:', '%.5f' % highest_value_and_position[0][4], '| ALPHABET:', alphabet, '| BEST INDIVIDUAL:', population[highest_value_and_position[1]])
     rec.record_bestone(island_number, highest_value_and_position[0][0], current_generation, bestone_file)
     return
 
