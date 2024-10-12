@@ -64,7 +64,7 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
     elitism_percentage = float(island_params[10])
     island_sizes[island_number] = population_size
     percentage_of_best_individuals_for_migration_all_islands[island_number] = percentage_of_best_individuals_for_migration_per_island
-    (population, evaluated_population, reference_cromossome, average_enabled_tasks) = inp.initialize_population(population_size, alphabet, full_log, xes_log, algo_option[0], fitness_weight, precision_weight, generalization_weight, simplicity_weight)
+    population, evaluated_population, reference_cromossome = inp.initialize_population(population_size, alphabet, full_log, xes_log, algo_option[0], fitness_weight, precision_weight, generalization_weight, simplicity_weight)
     fitness_evolution = []
     highest_value_and_position, lowest_value, average_value, sorted_evaluated_population = calculate_statistics(evaluated_population)
     fitness_evolution.append([lowest_value, highest_value_and_position[0][0], average_value, 0, highest_value_and_position[0][1], highest_value_and_position[0][2], highest_value_and_position[0][3], highest_value_and_position[0][4], 0, 0, 0, 0])
@@ -107,13 +107,14 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
             isl.send_individuals(population, island_number, number_of_islands, sorted_evaluated_population, messenger)
             (highest_value_and_position, sorted_evaluated_population) = cyc.choose_highest(evaluated_population)
         rec.record_evolution(log_name, str(round), paramenter_set[island_number + 1], island_number, highest_value_and_position[0], fitness_evolution, alphabet, population[int(highest_value_and_position[1])], island_start, island_end, island_duration, current_generation, algo_option[0])
-        if (algo_option[0] != 'ALIGNMENT_BASED-ETCONFORMANCE_TOKEN') and (fitness_evolution[current_generation][8] >= (stop_condition * 2 / 5)):
+        if (algo_option[0] != 'ALIGNMENT_BASED-ETCONFORMANCE_TOKEN') and (fitness_evolution[current_generation][8] >= (stop_condition * 3 / 5)):
             algo_option[0] = 'ALIGNMENT_BASED-ETCONFORMANCE_TOKEN'
         if (algo_option[0] == 'ALIGNMENT_BASED-ETCONFORMANCE_TOKEN') and (algo_option_changed[island_number] == 0):
             evaluated_population = fit.evaluate_population(population, alphabet, xes_log, algo_option[0], fitness_weight, precision_weight, generalization_weight, simplicity_weight)
             (highest_value_and_position, sorted_evaluated_population) = cyc.choose_highest(evaluated_population)
-            isl.set_broadcast_null(island_number, broadcast)
-            isl.send_individuals_null(island_number, messenger)
+            for island_n in range(0, number_of_islands):
+                isl.set_broadcast_null(island_n, broadcast)
+                isl.send_individuals_null(island_n, messenger)
             algo_option_changed[island_number] = 1
     evaluated_final_population = fit.evaluate_population(population, alphabet, xes_log, 'ALIGNMENT_BASED-ALIGN_ETCONFORMANCE', fitness_weight, precision_weight, generalization_weight, simplicity_weight)
     highest_value_and_position, lowest_value, average_value, sorted_evaluated_population = calculate_statistics(evaluated_final_population)

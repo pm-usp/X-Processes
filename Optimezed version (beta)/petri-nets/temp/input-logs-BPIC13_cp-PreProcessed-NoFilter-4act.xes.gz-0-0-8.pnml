@@ -13,14 +13,14 @@
           <text>1</text>
         </initialMarking>
       </place>
-      <place id="pi2">
-        <name>
-          <text>pi2</text>
-        </name>
-      </place>
       <place id="pi0">
         <name>
           <text>pi0</text>
+        </name>
+      </place>
+      <place id="sink">
+        <name>
+          <text>sink</text>
         </name>
       </place>
       <place id="pi1">
@@ -28,9 +28,9 @@
           <text>pi1</text>
         </name>
       </place>
-      <place id="sink">
+      <place id="pi2">
         <name>
-          <text>sink</text>
+          <text>pi2</text>
         </name>
       </place>
       <place id="pi5">
@@ -42,11 +42,16 @@
         <name>
           <text>silent-begin</text>
         </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="2e9ccd75-42c8-41b2-85f1-4237f67c5f94"/>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="98833839-d24f-402b-8e08-adf06b72f5e7"/>
       </transition>
       <transition id="Queued">
         <name>
           <text>Queued</text>
+        </name>
+      </transition>
+      <transition id="Completed">
+        <name>
+          <text>Completed</text>
         </name>
       </transition>
       <transition id="Unmatched">
@@ -59,37 +64,32 @@
           <text>Accepted</text>
         </name>
       </transition>
-      <transition id="Completed">
-        <name>
-          <text>Completed</text>
-        </name>
-      </transition>
       <transition id="silent0">
         <name>
           <text>silent0</text>
         </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="20048e3e-3f11-4411-84df-f45b99e6e578"/>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="82382354-3996-4db6-827c-2ba214ddacc0"/>
       </transition>
       <transition id="silent1">
         <name>
           <text>silent1</text>
         </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="09273aaf-01c9-42bc-8e29-b23613599999"/>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="fbc96a3c-3303-4514-8d35-a070509eeb8d"/>
       </transition>
-      <arc id="2928939672272" source="pi0" target="Unmatched"/>
-      <arc id="2928939673872" source="pi2" target="silent1"/>
-      <arc id="2928939672464" source="silent1" target="pi1"/>
-      <arc id="2928939671440" source="pi5" target="Queued"/>
-      <arc id="2928939669392" source="source" target="silent-begin"/>
-      <arc id="2928939674960" source="silent-begin" target="pi0"/>
-      <arc id="2928939672144" source="Completed" target="sink"/>
-      <arc id="2928939671760" source="Accepted" target="pi2"/>
-      <arc id="2928939666576" source="Queued" target="pi1"/>
-      <arc id="2928939674064" source="Unmatched" target="pi5"/>
-      <arc id="2928939669136" source="pi0" target="silent0"/>
-      <arc id="2928939668560" source="silent0" target="pi1"/>
-      <arc id="2928939678416" source="pi1" target="Accepted"/>
-      <arc id="2928939665488" source="pi2" target="Completed"/>
+      <arc id="2418226080400" source="pi2" target="silent1"/>
+      <arc id="2418226074256" source="pi2" target="Completed"/>
+      <arc id="2418226078416" source="pi5" target="Queued"/>
+      <arc id="2418226081552" source="silent1" target="pi1"/>
+      <arc id="2418226074384" source="source" target="silent-begin"/>
+      <arc id="2418226084432" source="silent-begin" target="pi0"/>
+      <arc id="2418226082640" source="Completed" target="sink"/>
+      <arc id="2418226085840" source="Accepted" target="pi2"/>
+      <arc id="2418226081296" source="Queued" target="pi1"/>
+      <arc id="2418226076816" source="Unmatched" target="pi5"/>
+      <arc id="2418226081040" source="pi0" target="silent0"/>
+      <arc id="2418226076304" source="silent0" target="pi1"/>
+      <arc id="2418226080016" source="pi1" target="Accepted"/>
+      <arc id="2418226082128" source="pi0" target="Unmatched"/>
     </page>
     <finalmarkings>
       <marking>

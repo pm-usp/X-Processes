@@ -135,7 +135,7 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
         if (algo_option[0] == 'ALIGNMENT_BASED-ETCONFORMANCE_TOKEN') and (algo_option_changed[island_number] == 0):
             evaluated_population = fit.evaluate_population(population, alphabet, xes_log, algo_option[0], fitness_weight, precision_weight, generalization_weight, simplicity_weight)
             (highest_value_and_position, sorted_evaluated_population) = cyc.choose_highest(evaluated_population)
-            for island_n in range(0, number_of_islands): #se funcionar, preciso mudar para fazer isso apenas uma vez
+            for island_n in range(0, number_of_islands):
                 isl.set_broadcast_null(island_n, broadcast)  
                 isl.send_individuals_null(island_n, messenger)  
             algo_option_changed[island_number] = 1

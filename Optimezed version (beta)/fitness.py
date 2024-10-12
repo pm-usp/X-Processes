@@ -1,6 +1,7 @@
 import petrinets as pn
 import pm4py
 from joblib import Parallel, delayed
+import inspect
 
 def evaluate_population(population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
     # evaluation_values = Parallel(n_jobs=-1, backend="threading")(delayed(evaluate_individual)(population[i], alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight, i) for i in range(len(population)))
@@ -21,8 +22,14 @@ def evaluate_individual(cromossome, alphabet, xes_log, algo_option, fitness_weig
         'ALIGNMENT_BASED-ETCONFORMANCE_TOKEN': (pm4py.fitness_alignments, pm4py.precision_token_based_replay),
         'ALIGNMENT_BASED-ALIGN_ETCONFORMANCE': (pm4py.fitness_alignments, pm4py.precision_alignments)}
     fitness_fn, precision_fn = metrics_functions[algo_option]
-    fitness = fitness_fn(xes_log, petrinet, initial_marking, final_marking)
-    precision = precision_fn(xes_log, petrinet, initial_marking, final_marking)
+    if 'multi_processing' in inspect.signature(fitness_fn).parameters:
+        fitness = fitness_fn(xes_log, petrinet, initial_marking, final_marking, multi_processing=False)
+    else:
+        fitness = fitness_fn(xes_log, petrinet, initial_marking, final_marking)
+    if 'multi_processing' in inspect.signature(precision_fn).parameters:
+        precision = precision_fn(xes_log, petrinet, initial_marking, final_marking, multi_processing=False)
+    else:
+        precision = precision_fn(xes_log, petrinet, initial_marking, final_marking)
     if fitness['log_fitness'] == 0 or precision == 0:
         return 0, fitness['log_fitness'], precision, 0, 0, i, 0
     generaliz = pm4py.generalization_tbr(xes_log, petrinet, initial_marking, final_marking)

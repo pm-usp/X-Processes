@@ -39,16 +39,17 @@ def process_log(log):
 
 def initialize_population(population_size, alphabet, log, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
     population = np.zeros((population_size, (len(alphabet) + 1), (len(alphabet)) + 1), dtype=np.int64)
-    reference_cromossome, average_enabled_tasks = create_DFG(log, alphabet)
-    reference_cromossome = np.array(reference_cromossome, dtype=np.int64)  # Convertendo para NumPy array
+    reference_cromossome = create_DFG(log, alphabet)
+    reference_cromossome = np.array(reference_cromossome, dtype=np.int64)
     # for i in prange(population_size):
     for i in range(population_size):
         population[i] = create_initial_individual(population[i], alphabet, reference_cromossome)
+        print(population[i])
         while not pn.is_sound(population[i], alphabet):
             population[i] = initialize_individual(len(alphabet) + 1)
             population[i] = create_initial_individual(population[i], alphabet, reference_cromossome)
     population[0] = reference_cromossome
-    return (population, fit.evaluate_population(population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight), reference_cromossome, average_enabled_tasks)
+    return (population, fit.evaluate_population(population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight), reference_cromossome)
 
 @njit
 def initialize_individual(number_of_tasks):
@@ -65,13 +66,7 @@ def create_DFG(log, alphabet):
             current_task = get_task_id(trace[k], alphabet)
             next_task = get_task_id(trace[k + 1], alphabet)
             DFG[current_task][next_task] = 1
-    enabled_tasks = 0
-    # for j in prange(len(DFG) - 1):
-    for j in range(len(DFG) - 1):
-        for k in range(1, len(DFG[j]) - 1):
-            if DFG[j][k] == 1:
-                enabled_tasks = enabled_tasks + 1
-    return (DFG, enabled_tasks)
+    return DFG
 
 
 def get_task_id(task, alphabet):
