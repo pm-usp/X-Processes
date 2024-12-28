@@ -1,7 +1,9 @@
 # This code refers to the alternative to measure the time spend of the functions in the project
-# With the purpose to discover the bottlenecks of the x-processes method
+# With the purpose to discover the bottlenecks of the x-processes method :)
 import csv
 import time
+
+file_name = 'Time_measurement.xlsx'
 
 def measure_time(func):
     def wrapper(*args, **kwargs):
@@ -15,8 +17,11 @@ def measure_time(func):
 # This function has the purpose to write the results of the function measure_time in a Excel file
 # called 'Time_measurement.xlsx' locate in the path: X-Processes/Optimezed version (beta)/test-gui
 @measure_time
-def write_time_measurement(file_name, data):
+def write_time_measurement(id_function,timespend):
     fileToOpen = open(file_name, 'a')
     writer = csv.writer(fileToOpen, dialect='excel', delimiter=',')
-    writer.writerow(data)
+
+    writer.writerow(id_function)
+    # writer.writerow(timespend)
+
     fileToOpen.close()

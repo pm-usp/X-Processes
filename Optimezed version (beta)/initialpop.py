@@ -1,4 +1,6 @@
-﻿import random as ran
+﻿import tm
+
+import random as ran
 import fitness as fit
 import petrinets as pn
 import operators as op
@@ -148,3 +150,65 @@ def increase_or_decrease_tokens(cromossome, number_of_produced_XOR_tokens, numbe
         else:
             op.increase_number_of_consumed_tokens(cromossome, number_of_produced_XOR_tokens, number_of_produced_AND_tokens)
     return cromossome
+
+########################################################################################################################
+
+@tm.measure_time
+def process_trace_tm(trace):
+    return process_trace(trace)
+
+@tm.measure_time
+def create_alphabet_tm(log):
+    return  create_alphabet(log)
+
+@tm.measure_time
+def process_entry_tm(entry):
+    return process_entry(entry)
+
+@tm.measure_time
+def process_log_tm(log):
+    return process_log(log)
+
+@tm.measure_time
+def initialize_population_tm(population_size, alphabet, log, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
+    return initialize_population(population_size, alphabet, log, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight)
+
+@tm.measure_time
+def initialize_individual_tm(number_of_tasks):
+    return initialize_individual(number_of_tasks)
+
+@tm.measure_time
+def create_empty_individual_task_tm(number_of_tasks):
+    return create_empty_individual_task(number_of_tasks)
+
+@tm.measure_time
+def create_DFG_tm(log, alphabet):
+    return  create_DFG(log, alphabet)
+
+@tm.measure_time
+def get_task_id_tm(task, alphabet):
+    return get_task_id(task, alphabet)
+
+@tm.measure_time
+def create_initial_individual_tm(cromossome, alphabet, reference_cromossome):
+    return create_initial_individual(cromossome, alphabet, reference_cromossome)
+
+@tm.measure_time
+def create_tasks_tm(alphabet, reference_cromossome, cromossome):
+    return create_tasks(alphabet, reference_cromossome, cromossome)
+
+@tm.measure_time
+def process_cromossome_to_create_AND_gateways_tm(cromossome):
+    return process_cromossome_to_create_AND_gateways(cromossome)
+
+@tm.measure_time
+def create_AND_gateways_tm(cromossome):
+    return create_AND_gateways(cromossome)
+
+@tm.measure_time
+def create_AND_gateways_tm(cromossome):
+    return create_AND_gateways(cromossome)
+
+@tm.measure_time
+def increase_or_decrease_tokens_tm(cromossome, number_of_produced_XOR_tokens, number_of_consumed_XOR_tokens, number_of_produced_AND_tokens, number_of_consumed_AND_tokens):
+    return increase_or_decrease_tokens(cromossome, number_of_produced_XOR_tokens, number_of_consumed_XOR_tokens, number_of_produced_AND_tokens, number_of_consumed_AND_tokens)

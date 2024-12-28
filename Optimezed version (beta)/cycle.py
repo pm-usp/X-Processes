@@ -1,3 +1,4 @@
+import tm
 import copy
 import operators as opr
 import fitness as fit
@@ -86,4 +87,25 @@ def calculate_average(evaluated_population):
     value_sum = 0                                                                                                       
     for i in range(len(evaluated_population[1])):                                                                       
         value_sum += evaluated_population[1][i][0]
-    return value_sum / len(evaluated_population[1])                                                                     
+    return value_sum / len(evaluated_population[1])
+
+#Time measurement approch (Guilherme)
+@tm.measure_time
+def process_individual_pair_tm(individual_pair, population, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome, alphabet):
+    return process_individual_pair(individual_pair, population, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome, alphabet)
+
+@tm.measure_time
+def generation_tm(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
+    return generation(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight)
+@tm.measure_time
+def take_first_tm(elem):
+    return take_first(elem)
+@tm.measure_time
+def choose_highest_tm(evaluated_population):
+    return choose_highest(evaluated_population)
+@tm.measure_time
+def choose_lowest_tm(sorted_evaluated_population):
+    return choose_lowest(sorted_evaluated_population)
+@tm.measure_time
+def calculate_average_tm(evaluated_population):
+    return calculate_average(evaluated_population)

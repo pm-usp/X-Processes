@@ -1,17 +1,18 @@
+import tm
 from random import randint
 from multiprocessing import Pool
 
-def nonblank_lines(f):                                                                                                  
+def nonblank_lines(f):
     for l in f:                                                                                                         
         line = l.rstrip()                                                                                               
         if line:                                                                                                        
             yield line                                                                                                  
 
-def plotting_file_creator(var):                                                                                         
+def plotting_file_creator(var):
     plot = open('output-graphs/plotting/plotting_{0}.txt'.format(var), 'w')                                             
     plot.close()                                                                                                        
 
-def create_plotting_files(number_of_islands, number_of_threads):                                                        
+def create_plotting_files(number_of_islands, number_of_threads):
     p = Pool(number_of_threads)                                                                                         
     p.map(plotting_file_creator, number_of_islands)                                                                     
     p.close()                                                                                                           
@@ -100,3 +101,43 @@ def do_migration(island_population, island_number, number_of_islands, island_fit
             evaluated_population[0] += aux_list[0]
             iter += 1
     return
+
+@tm.measure_time
+def nonblank_lines_tm(f):
+    return nonblank_lines(f)
+
+@tm.measure_time
+def plotting_file_creator_tm(var):
+    return plotting_file_creator(var)
+
+@tm.measure_time
+def create_plotting_files_tm(number_of_islands, number_of_threads):
+    return create_plotting_files(number_of_islands, number_of_threads)
+
+@tm.measure_time
+def set_broadcast_tm(population, sorted_evaluated_population, island_number, percentage_of_best_individuals_for_migration_per_island, broadcast):
+    return set_broadcast(population, sorted_evaluated_population, island_number, percentage_of_best_individuals_for_migration_per_island, broadcast)
+
+@tm.measure_time
+def set_broadcast_null_tm(island_number, broadcast):
+    return set_broadcast_null(island_number, broadcast)
+
+@tm.measure_time
+def pick_island_tm(island_number, number_of_islands, migration_index, broadcast, island_sizes, percentage_of_best_individuals_for_migration_all_islands):
+    return pick_island(island_number, number_of_islands, migration_index, broadcast, island_sizes, percentage_of_best_individuals_for_migration_all_islands)
+
+@tm.measure_time
+def send_individuals_tm(population, island_number, number_of_islands, sorted_evaluated_population, messenger):
+    return send_individuals(population, island_number, number_of_islands, sorted_evaluated_population, messenger)
+
+@tm.measure_time
+def send_individuals_null_tm(island_number, messenger):
+    return send_individuals_null(island_number, messenger)
+
+@tm.measure_time
+def receive_individuals_tm(population, island_number, sorted_evaluated_population, messenger, evaluated_population):
+    return receive_individuals(population, island_number, sorted_evaluated_population, messenger, evaluated_population)
+
+@tm.measure_time
+def do_migration_tm(island_population, island_number, number_of_islands, island_fitness, percentage_of_individuals_for_migration_per_island, broadcast, island_sizes, percentage_of_best_individuals_for_migration_all_islands, evaluated_population):
+    return do_migration(island_population, island_number, number_of_islands, island_fitness, percentage_of_individuals_for_migration_per_island, broadcast, island_sizes, percentage_of_best_individuals_for_migration_all_islands, evaluated_population)

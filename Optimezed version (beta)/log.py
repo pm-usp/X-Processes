@@ -1,3 +1,4 @@
+import tm
 import pandas as pd
 import pm4py
 import re
@@ -25,3 +26,11 @@ def import_log(inputlog):
         log = list(executor.map(lambda x: [event for event in x if pd.notna(event)], unique_traces))
     print('Number of traces in pre-processed log, excluding two or more sequences of the same task:', len(log))
     return log, name_inputlog, xes_log
+
+@tm.measure_time
+def remove_consecutive_repetitions_tm(trace):
+    return remove_consecutive_repetitions(trace)
+
+@tm.measure_time
+def import_log_tm(inputlog):
+    return import_log(inputlog)

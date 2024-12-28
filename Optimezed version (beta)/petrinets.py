@@ -1,3 +1,4 @@
+import tm
 import numpy as np
 import pm4py
 import concurrent.futures
@@ -176,3 +177,43 @@ def is_sound(cromossome, alphabet):
     petrinet, initial_marking, final_marking = create_petri_net(cromossome, alphabet)
     res = pm4py.check_soundness(petrinet, initial_marking, final_marking)
     return res[0]
+
+@tm.measure_time
+def initialize_places_tm(input_places, output_places):
+    return initialize_places(input_places, output_places)
+
+@tm.measure_time
+def adjust_places_sums_tm(input_places, output_places):
+    return adjust_places_sums(input_places, output_places)
+
+@tm.measure_time
+def clear_internal_places_tm(input_places, output_places):
+    return clear_internal_places(input_places, output_places)
+
+@tm.measure_time
+def configure_input_output_places_tm(cromossome, input_places, output_places, output_place, net):
+    return configure_input_output_places(cromossome, input_places, output_places, output_place, net)
+
+@tm.measure_time
+def configure_output_places_tm(cromossome, input_places, output_places, net):
+    return configure_output_places(cromossome, input_places, output_places, net)
+
+@tm.measure_time
+def add_input_to_transition_arcs_tm(cromossome, input_places, transitions, net):
+    return add_input_to_transition_arcs(cromossome, input_places, transitions, net)
+
+@tm.measure_time
+def add_output_to_transition_arcs_tm(cromossome, input_places, output_places, transitions, net):
+    return add_output_to_transition_arcs(cromossome, input_places, output_places, transitions, net)
+@tm.measure_time
+def create_petri_net_tm(cromossome, alphabet):
+    return create_petri_net(cromossome, alphabet)
+@tm.measure_time
+def create_pn_tm(cromossome, alphabet, island, generation, log_name, round):
+    return create_pn(cromossome, alphabet, island, generation, log_name, round)
+@tm.measure_time
+def write_and_show_best_pn_tm(best_island_number, log_name, round, generation_best, bestone_file):
+    return write_and_show_best_pn(best_island_number, log_name, round, generation_best, bestone_file)
+@tm.measure_time
+def is_sound_tm(cromossome, alphabet):
+    return is_sound(cromossome, alphabet)

@@ -1,3 +1,4 @@
+import tm
 import random as ran
 import numpy as np
 import copy
@@ -414,3 +415,67 @@ def elitism(population, elitism_percentage, sorted_evaluated_aux_population, sor
         else:
             break
     evaluated_aux_population[0] = total_evaluation_aux_population
+
+@tm.measure_time
+def parent_selection(evaluated_population):
+    return parent_selection(evaluated_population)
+@tm.measure_time
+def crossover_per_process(crossover_probability, max_perc_of_num_tasks_for_crossover, cromossome_1, cromossome_2):
+
+@tm.measure_time
+def mutation(cromossome, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome):
+
+@tm.measure_time
+def mutate_task(cromossome, chosen_task, reference_cromossome, reverse=False):
+
+@tm.measure_time
+def adjust_produced_consumed_tokens(cromossome):
+
+@tm.measure_time
+def task_mutation(cromossome, max_perc_of_num_tasks_for_task_mutation, reference_cromossome)
+
+@tm.measure_time
+def mutate_and_choose(cromossome, reference_cromossome, val1, val2):
+
+@tm.measure_time
+def gateway_mutation(cromossome, max_perc_of_num_tasks_for_gateway_mutation):
+
+@tm.measure_time
+def count_produced_XOR_tokens(cromossome):
+
+@tm.measure_time
+def count_consumed_XOR_tokens(cromossome):
+
+@tm.measure_time
+def count_produced_AND_tokens(cromossome):
+
+@tm.measure_time
+def count_consumed_AND_tokens(cromossome):
+
+@tm.measure_time
+def increase_number_of_produced_tokens(cromossome, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens):
+    return
+
+@tm.measure_time
+def increase_number_of_consumed_tokens(cromossome, number_of_produced_XOR_tokens, number_of_produced_AND_tokens):
+
+@tm.measure_time
+def decrease_number_of_produced_tokens(cromossome, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens):
+
+@tm.measure_time
+def decrease_number_of_consumed_tokens(cromossome, number_of_produced_XOR_tokens, number_of_produced_AND_tokens):
+
+@tm.measure_time
+def is_there_at_least_one_raw_active_task(cromossome, chosen_task):
+
+@tm.measure_time
+def is_there_at_least_one_column_active_task(cromossome, chosen_task):
+
+@tm.measure_time
+def is_there_at_least_one_column_active_task(cromossome, chosen_task):
+
+@tm.measure_time
+def is_there_at_least_two_column_active_tasks(cromossome, chosen_task)
+
+@tm.measure_time
+def elitism(population, elitism_percentage, sorted_evaluated_aux_population, sorted_evaluated_population, auxiliary_population, evaluated_aux_population, evaluated_population):

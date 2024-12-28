@@ -1,3 +1,4 @@
+import tm
 import csv
 import platform
 import os
@@ -110,3 +111,19 @@ def record_bestone(island_number, highest_hm, generation, bestone_file, island_d
                     bestone.write(str(island_duration) + '\n')
                     bestone.close()
     return
+
+@tm.measure_time
+def write_to_locked_file_tm(file_name, data):
+    return write_to_locked_file(file_name, data)
+
+@tm.measure_time
+def record_evolution_tm(log_name, round, parameters, island_number, highest_values, fitness_evolution, alphabet, best_individual, island_start, island_end, island_duration, current_generation, algo_option):
+    return record_evolution(log_name, round, parameters, island_number, highest_values, fitness_evolution, alphabet, best_individual, island_start, island_end, island_duration, current_generation, algo_option)
+
+@tm.measure_time
+def write_locked_bestone(file_name, data):
+    return write_locked_bestone(file_name, data)
+
+@tm.measure_time
+def record_bestone(island_number, highest_hm, generation, bestone_file, island_duration):
+    return record_bestone(island_number, highest_hm, generation, bestone_file, island_duration)
