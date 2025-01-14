@@ -26,15 +26,15 @@ def write_to_locked_file(file_name, data):
                 time.sleep(0.01)
 
 
-def record_evolution(log_name, round, parameters, island_number, highest_values, fitness_evolution, alphabet, best_individual, island_start, island_end, island_duration, current_generation, algo_option):     
+def record_evolution(log_name, round, parameters, island_number, highest_values, fitness_evolution, alphabet, best_individual, island_start, island_end, island_duration, current_generation):
     values_of_parameters = ''                                                                                           
     for i in range(len(parameters)):                                                                                    
         values_of_parameters = values_of_parameters + str(parameters[i]) + '	'                                       
     highest_values_values = ''                                                                                          
     for i in range(len(highest_values)):                                                                                
         highest_values_values = highest_values_values + str(highest_values[i]) + '	'                                   
-    fields2a = [str(round) + '	' + str(island_number) + '	' + values_of_parameters + str(current_generation) + '	' + str(island_start) + '	' + str(island_end) + '	' + str(island_duration) + '	' + highest_values_values + algo_option + '	' + str(alphabet) + '	' + str(best_individual) + '	' + log_name + '	' + str(fitness_evolution)]     
-    fields2b = [str(round) + '	' + str(island_number) + '	' + values_of_parameters + str(current_generation) + '	' + str(island_start) + '	' + str(island_end) + '	' + str(island_duration) + '	' + highest_values_values + algo_option]
+    fields2a = [str(round) + '	' + str(island_number) + '	' + values_of_parameters + str(current_generation) + '	' + str(island_start) + '	' + str(island_end) + '	' + str(island_duration) + '	' + highest_values_values + '	' + str(alphabet) + '	' + str(best_individual) + '	' + log_name + '	' + str(fitness_evolution)]
+    fields2b = [str(round) + '	' + str(island_number) + '	' + values_of_parameters + str(current_generation) + '	' + str(island_start) + '	' + str(island_end) + '	' + str(island_duration) + '	' + highest_values_values]
 
     log_name = log_name.replace("\\", "-").replace("/", "-")
 

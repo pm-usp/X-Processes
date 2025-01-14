@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<pnml>
+  <net id="" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+    <name>
+      <text></text>
+    </name>
+    <page id="n0">
+      <place id="ent_Gateway_join_1">
+        <name>
+          <text>ent_Gateway_join_1</text>
+        </name>
+      </place>
+      <place id="sink">
+        <name>
+          <text>sink</text>
+        </name>
+      </place>
+      <place id="exi_Gateway_split_1">
+        <name>
+          <text>exi_Gateway_split_1</text>
+        </name>
+      </place>
+      <place id="source">
+        <name>
+          <text>source</text>
+        </name>
+        <initialMarking>
+          <text>1</text>
+        </initialMarking>
+      </place>
+      <transition id="Activity_3">
+        <name>
+          <text>Queued</text>
+        </name>
+      </transition>
+      <transition id="Activity_2">
+        <name>
+          <text>Completed</text>
+        </name>
+      </transition>
+      <transition id="sfl_Flow_1_5">
+        <name>
+          <text>sfl_Flow_1_5</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="acc7ae92-c906-48e5-a4d9-39d1742e373a"/>
+      </transition>
+      <transition id="Activity_1">
+        <name>
+          <text>Accepted</text>
+        </name>
+      </transition>
+      <arc id="2196712301456" source="Activity_2" target="ent_Gateway_join_1"/>
+      <arc id="2196712300944" source="Activity_3" target="ent_Gateway_join_1"/>
+      <arc id="2196713130128" source="exi_Gateway_split_1" target="sfl_Flow_1_5"/>
+      <arc id="2196712294672" source="ent_Gateway_join_1" target="Activity_1"/>
+      <arc id="2196712292688" source="exi_Gateway_split_1" target="Activity_2"/>
+      <arc id="2196712295056" source="Activity_1" target="exi_Gateway_split_1"/>
+      <arc id="2196712298448" source="source" target="Activity_3"/>
+      <arc id="2196712300240" source="sfl_Flow_1_5" target="sink"/>
+    </page>
+    <finalmarkings>
+      <marking>
+        <place idref="sink">
+          <text>1</text>
+        </place>
+      </marking>
+    </finalmarkings>
+  </net>
+</pnml>

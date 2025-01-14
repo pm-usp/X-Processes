@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<pnml>
+  <net id="" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+    <name>
+      <text></text>
+    </name>
+    <page id="n0">
+      <place id="source">
+        <name>
+          <text>source</text>
+        </name>
+        <initialMarking>
+          <text>1</text>
+        </initialMarking>
+      </place>
+      <place id="Flow_1_2">
+        <name>
+          <text>Flow_1_2</text>
+        </name>
+      </place>
+      <place id="Flow_0_2">
+        <name>
+          <text>Flow_0_2</text>
+        </name>
+      </place>
+      <place id="ent_Activity_4">
+        <name>
+          <text>ent_Activity_4</text>
+        </name>
+      </place>
+      <place id="ent_Activity_1">
+        <name>
+          <text>ent_Activity_1</text>
+        </name>
+      </place>
+      <place id="sink">
+        <name>
+          <text>sink</text>
+        </name>
+      </place>
+      <transition id="Activity_4">
+        <name>
+          <text>Unmatched</text>
+        </name>
+      </transition>
+      <transition id="Activity_2">
+        <name>
+          <text>Completed</text>
+        </name>
+      </transition>
+      <transition id="Activity_1">
+        <name>
+          <text>Accepted</text>
+        </name>
+      </transition>
+      <transition id="c9e6c5af-bfdb-4bce-8e1a-ce477fa57eae">
+        <name>
+          <text>c9e6c5af-bfdb-4bce-8e1a-ce477fa57eae</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="920f18ef-b761-4aa0-be89-260dfd1f5167"/>
+      </transition>
+      <arc id="1896204638096" source="ent_Activity_4" target="Activity_4"/>
+      <arc id="1896204648208" source="ent_Activity_1" target="Activity_1"/>
+      <arc id="1894104465296" source="Flow_0_2" target="Activity_2"/>
+      <arc id="1894104450064" source="c9e6c5af-bfdb-4bce-8e1a-ce477fa57eae" target="Flow_0_2"/>
+      <arc id="1896204638480" source="source" target="c9e6c5af-bfdb-4bce-8e1a-ce477fa57eae"/>
+      <arc id="1894104451344" source="Flow_1_2" target="Activity_2"/>
+      <arc id="1894104450000" source="Activity_1" target="Flow_1_2"/>
+      <arc id="1894104456272" source="Activity_2" target="sink"/>
+      <arc id="1894104462800" source="Activity_4" target="ent_Activity_1"/>
+      <arc id="1894104455248" source="c9e6c5af-bfdb-4bce-8e1a-ce477fa57eae" target="ent_Activity_4"/>
+    </page>
+    <finalmarkings>
+      <marking>
+        <place idref="sink">
+          <text>1</text>
+        </place>
+      </marking>
+    </finalmarkings>
+  </net>
+</pnml>

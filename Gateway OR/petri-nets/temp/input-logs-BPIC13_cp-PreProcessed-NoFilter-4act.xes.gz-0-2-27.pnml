@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<pnml>
+  <net id="" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+    <name>
+      <text></text>
+    </name>
+    <page id="n0">
+      <place id="ent_Gateway_join_3">
+        <name>
+          <text>ent_Gateway_join_3</text>
+        </name>
+      </place>
+      <place id="exi_Gateway_split_1">
+        <name>
+          <text>exi_Gateway_split_1</text>
+        </name>
+      </place>
+      <place id="source">
+        <name>
+          <text>source</text>
+        </name>
+        <initialMarking>
+          <text>1</text>
+        </initialMarking>
+      </place>
+      <place id="sink">
+        <name>
+          <text>sink</text>
+        </name>
+      </place>
+      <place id="ent_Gateway_join_1">
+        <name>
+          <text>ent_Gateway_join_1</text>
+        </name>
+      </place>
+      <place id="exi_Gateway_split_0">
+        <name>
+          <text>exi_Gateway_split_0</text>
+        </name>
+      </place>
+      <transition id="7f154c6b-e1ec-4714-97d7-ad779efa41b6">
+        <name>
+          <text>7f154c6b-e1ec-4714-97d7-ad779efa41b6</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="172db968-2532-4e32-bc3d-aed88ea71d40"/>
+      </transition>
+      <transition id="sfl_Flow_0_1">
+        <name>
+          <text>sfl_Flow_0_1</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="81b189fc-edd3-4078-b395-d813ed390bef"/>
+      </transition>
+      <transition id="sfl_Flow_1_1">
+        <name>
+          <text>sfl_Flow_1_1</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="a3e54826-f242-4e2d-9357-9812947b04cd"/>
+      </transition>
+      <transition id="sfl_Flow_1_3">
+        <name>
+          <text>sfl_Flow_1_3</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="92797cdb-af62-4b70-a1f9-230acd440de5"/>
+      </transition>
+      <transition id="Activity_2">
+        <name>
+          <text>Completed</text>
+        </name>
+      </transition>
+      <transition id="Activity_1">
+        <name>
+          <text>Accepted</text>
+        </name>
+      </transition>
+      <transition id="Activity_3">
+        <name>
+          <text>Queued</text>
+        </name>
+      </transition>
+      <transition id="sfl_Flow_0_3">
+        <name>
+          <text>sfl_Flow_0_3</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="130ee29d-0b93-4fec-ae23-b284fff5e691"/>
+      </transition>
+      <arc id="1303485196048" source="ent_Gateway_join_3" target="Activity_3"/>
+      <arc id="1303485202256" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
+      <arc id="1303485187984" source="Activity_2" target="sink"/>
+      <arc id="1303485194768" source="sfl_Flow_0_3" target="ent_Gateway_join_3"/>
+      <arc id="1303488147792" source="exi_Gateway_split_0" target="sfl_Flow_0_1"/>
+      <arc id="1303485201424" source="exi_Gateway_split_1" target="sfl_Flow_1_3"/>
+      <arc id="1303485201808" source="7f154c6b-e1ec-4714-97d7-ad779efa41b6" target="exi_Gateway_split_0"/>
+      <arc id="1303485189072" source="Activity_1" target="exi_Gateway_split_1"/>
+      <arc id="1303485193936" source="exi_Gateway_split_1" target="Activity_2"/>
+      <arc id="1303485242192" source="source" target="7f154c6b-e1ec-4714-97d7-ad779efa41b6"/>
+      <arc id="1303485187920" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
+      <arc id="1303485196112" source="sfl_Flow_0_1" target="ent_Gateway_join_1"/>
+      <arc id="1303485241552" source="exi_Gateway_split_0" target="sfl_Flow_0_3"/>
+      <arc id="1303485198480" source="ent_Gateway_join_1" target="Activity_1"/>
+      <arc id="1303485186704" source="sfl_Flow_1_3" target="ent_Gateway_join_3"/>
+      <arc id="1303485189456" source="Activity_3" target="ent_Gateway_join_1"/>
+    </page>
+    <finalmarkings>
+      <marking>
+        <place idref="sink">
+          <text>1</text>
+        </place>
+      </marking>
+    </finalmarkings>
+  </net>
+</pnml>

@@ -1,0 +1,25 @@
+Which activities most influence the prediction result?
+What is the positive influence?
+Which activities do not influence the result of the prediction?
+What is the positive influence?
+What is the negative influence?
+How much do you trust your interpretation?
+Do you see another way to interpret the graph?
+Comparing the two graphs, which one is easier to make this identification, this one or the previous one?
+
+How important is it for an organization to know the activities that most influence the predicted class?
+How important is it for an organization to know the activities that least influence the predicted class?
+What types of decisions could you make based on the information in the graph?
+Which professionals/positions can use the information in this chart?
+Comparing the two graphs, which one presents the information in the most appropriate way for making that type of decision, this one or the previous one?
+Comparing the two graphs, which one could be more useful for professional positions?
+
+Are the colors used in the chart easy to distinguish?
+(only requested for VisInter4PPM graphs) Does the intensity of the colors in the graph allow you to easily interpret the influence of activities on the prediction?
+(only requested for SP-LIME graphs) Do the direction, color and size of the bars in the graph allow you to easily interpret the influence of activities on the prediction?
+Do you think something can be added to this graph to make the two prediction results easier to interpret?
+
+Looking at this graph with a global view for all instances of the same class, what do you think could be more useful: individual views of each case or a single view of two cases grouped together?
+
+
+		 

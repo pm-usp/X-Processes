@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<pnml>
+  <net id="" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+    <name>
+      <text></text>
+    </name>
+    <page id="n0">
+      <place id="Flow_1_3">
+        <name>
+          <text>Flow_1_3</text>
+        </name>
+      </place>
+      <place id="Flow_3_5">
+        <name>
+          <text>Flow_3_5</text>
+        </name>
+      </place>
+      <place id="source">
+        <name>
+          <text>source</text>
+        </name>
+        <initialMarking>
+          <text>1</text>
+        </initialMarking>
+      </place>
+      <place id="sink">
+        <name>
+          <text>sink</text>
+        </name>
+      </place>
+      <place id="Flow_1_5">
+        <name>
+          <text>Flow_1_5</text>
+        </name>
+      </place>
+      <transition id="857a5090-8d92-4e7a-a24e-c3f065edb6e7">
+        <name>
+          <text>857a5090-8d92-4e7a-a24e-c3f065edb6e7</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="0c4fb7a0-af52-41c2-8f19-3d465651b5e8"/>
+      </transition>
+      <transition id="Activity_3">
+        <name>
+          <text>Queued</text>
+        </name>
+      </transition>
+      <transition id="f7351603-50ae-4ed5-b2c9-8741abb02706">
+        <name>
+          <text>f7351603-50ae-4ed5-b2c9-8741abb02706</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="9f880ebb-5856-48d7-85f2-4bfad54b9df8"/>
+      </transition>
+      <transition id="Activity_1">
+        <name>
+          <text>Accepted</text>
+        </name>
+      </transition>
+      <arc id="2330043274768" source="f7351603-50ae-4ed5-b2c9-8741abb02706" target="Flow_3_5"/>
+      <arc id="2330088451216" source="source" target="Activity_1"/>
+      <arc id="2330043275792" source="857a5090-8d92-4e7a-a24e-c3f065edb6e7" target="sink"/>
+      <arc id="2330065725712" source="Flow_3_5" target="857a5090-8d92-4e7a-a24e-c3f065edb6e7"/>
+      <arc id="2330043270224" source="Flow_1_3" target="f7351603-50ae-4ed5-b2c9-8741abb02706"/>
+      <arc id="2330065840592" source="Activity_1" target="Flow_1_5"/>
+      <arc id="2330065838544" source="Activity_3" target="Flow_3_5"/>
+      <arc id="2330043285328" source="Activity_1" target="Flow_1_3"/>
+      <arc id="2330065830416" source="Flow_1_3" target="Activity_3"/>
+      <arc id="2330065726160" source="Flow_1_5" target="857a5090-8d92-4e7a-a24e-c3f065edb6e7"/>
+    </page>
+    <finalmarkings>
+      <marking>
+        <place idref="sink">
+          <text>1</text>
+        </place>
+      </marking>
+    </finalmarkings>
+  </net>
+</pnml>
