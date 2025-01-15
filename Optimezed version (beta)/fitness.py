@@ -1,8 +1,10 @@
+import tm
 import petrinets as pn
 import pm4py
 from joblib import Parallel, delayed
 import inspect
 
+@tm.measure_time
 def evaluate_population(population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
     # evaluation_values = Parallel(n_jobs=-1, backend="threading")(delayed(evaluate_individual)(population[i], alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight, i) for i in range(len(population)))
     # evaluation_sum = sum(value[0] for value in evaluation_values)
@@ -15,8 +17,9 @@ def evaluate_population(population, alphabet, xes_log, algo_option, fitness_weig
         evaluation_sum += individual_evaluation[0]
     return [evaluation_sum, evaluation_values]
 
+@tm.measure_time
 def evaluate_individual(cromossome, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight, i):
-    petrinet, initial_marking, final_marking = pn.create_petri_net(cromossome, alphabet)
+    petrinet, initial_marking, final_marking = pn.create_petri_net_tm(cromossome, alphabet) # <- alteração
     metrics_functions = {
         'TOKEN_BASED-ETCONFORMANCE_TOKEN': (pm4py.fitness_token_based_replay, pm4py.precision_token_based_replay),
         'ALIGNMENT_BASED-ETCONFORMANCE_TOKEN': (pm4py.fitness_alignments, pm4py.precision_token_based_replay),
@@ -38,3 +41,11 @@ def evaluate_individual(cromossome, alphabet, xes_log, algo_option, fitness_weig
         return 0, fitness['log_fitness'], precision, generaliz, simplic, i, 0
     f_score = (fitness_weight + precision_weight + generalization_weight + simplicity_weight) / ((fitness_weight / fitness['log_fitness']) + (precision_weight / precision) + (generalization_weight / generaliz) + (simplicity_weight / simplic))
     return f_score, fitness['log_fitness'], precision, generaliz, simplic, i, 0
+
+@tm.measure_time
+def evaluate_population_tm(population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
+    return evaluate_population(population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight)
+
+@tm.measure_time
+def evaluate_individual_tm(cromossome, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight, i):
+    return evaluate_individual(cromossome, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight, i)

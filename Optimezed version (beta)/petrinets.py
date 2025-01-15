@@ -1,15 +1,18 @@
+import tm
 import numpy as np
 import pm4py
 import concurrent.futures
 import os
 #os.environ['PATH'] = os.environ['PATH'] + ';' + os.environ['CONDA_PREFIX'] + r'\Library\bin\graphviz'
 
+@tm.measure_time
 def initialize_places(input_places, output_places):
     input_places[-1, :] = 0
     input_places[:, -1] = 0
     output_places[-1, :] = 0
     output_places[:, -1] = 0
 
+@tm.measure_time
 def adjust_places_sums(input_places, output_places):
     last_column = np.sum(input_places, axis=1)
     last_row = np.sum(input_places, axis=0)
@@ -18,10 +21,12 @@ def adjust_places_sums(input_places, output_places):
     output_places[-1, :] = last_row
     output_places[:, -1] = -1
 
+@tm.measure_time
 def clear_internal_places(input_places, output_places):
     input_places[:-1, :-1] = None
     output_places[:-1, :-1] = None
 
+@tm.measure_time
 def configure_input_output_places(cromossome, input_places, output_places, output_place, net):
     input_place_counter = 0
     for i in range(len(cromossome) - 2):
@@ -55,6 +60,7 @@ def configure_input_output_places(cromossome, input_places, output_places, outpu
                         input_places[i][j] = output_place[j]
                 net.places.add(input_places[i][j])
 
+@tm.measure_time
 def configure_output_places(cromossome, input_places, output_places, net):
     for j in range(1, len(cromossome) - 1):
         input_place = None
@@ -71,6 +77,7 @@ def configure_output_places(cromossome, input_places, output_places, net):
                     if ((cromossome[-1][j] == 0 and output_places[-1][j] > 1) and ((cromossome[i][-1] == 0 or cromossome[i][-1] == 1) and input_places[i][-1] == 1)) or (cromossome[i][-1] == 1 and cromossome[-1][j] == 0 and input_places[i][-1] > 1 and output_places[-1][j] > 1):
                         break
 
+@tm.measure_time
 def add_input_to_transition_arcs(cromossome, input_places, transitions, net, output_places):
     place_to_transition_arcs = set()
 
@@ -90,6 +97,7 @@ def add_input_to_transition_arcs(cromossome, input_places, transitions, net, out
         for j in range(1, len(cromossome) - 1):
             process_arc(i, j)
 
+@tm.measure_time
 def add_output_to_transition_arcs(cromossome, input_places, output_places, transitions, net):
     silent_counter = 0
     place_to_transition_arcs = set()  # Substituir por um conjunto
@@ -122,6 +130,7 @@ def add_output_to_transition_arcs(cromossome, input_places, output_places, trans
                         pm4py.objects.petri_net.utils.petri_utils.add_arc_from_to(output_places[i][j], transitions[j], net)
                         place_to_transition_arcs.add((output_places[i][j], transitions[j]))
 
+@tm.measure_time
 def create_petri_net(cromossome, alphabet):
     net = pm4py.objects.petri_net.obj.PetriNet('petri_net')
     transitions = []
@@ -158,12 +167,14 @@ def create_petri_net(cromossome, alphabet):
     net, initial_marking, final_marking = pm4py.reduce_petri_net_implicit_places(net, initial_marking, final_marking)
     return net, initial_marking, final_marking
 
+@tm.measure_time
 def create_pn(cromossome, alphabet, island, generation, log_name, round):
     petrinet, initial_marking, final_marking = create_petri_net(cromossome, alphabet)
     log_name = log_name.replace("\\", "-").replace("/", "-")
     pm4py.write_pnml(petrinet, initial_marking, final_marking, 'petri-nets/temp/' + str(log_name) + '-' + str(round) + '-' + str(island) + '-' + str(generation))
     return
 
+@tm.measure_time
 def write_and_show_best_pn(best_island_number, log_name, round, generation_best, bestone_file):
     petrinet_name = 'petri-nets/temp/' + str(log_name.replace("\\", "-").replace("/", "-")) + '-' + str(round) + '-' + str(best_island_number) + '-' + str(generation_best) + '.pnml'
     petrinet, initial_marking, final_marking = pm4py.read_pnml(petrinet_name)
@@ -172,7 +183,48 @@ def write_and_show_best_pn(best_island_number, log_name, round, generation_best,
     pm4py.view_petri_net(petrinet, initial_marking, final_marking)
     return
 
+@tm.measure_time
 def is_sound(cromossome, alphabet):
     petrinet, initial_marking, final_marking = create_petri_net(cromossome, alphabet)
     res = pm4py.check_soundness(petrinet, initial_marking, final_marking)
     return res[0]
+
+# @tm.measure_time
+# def initialize_places_tm(input_places, output_places):
+#     return initialize_places(input_places, output_places)
+#
+# @tm.measure_time
+# def adjust_places_sums_tm(input_places, output_places):
+#     return adjust_places_sums(input_places, output_places)
+#
+# @tm.measure_time
+# def clear_internal_places_tm(input_places, output_places):
+#     return clear_internal_places(input_places, output_places)
+#
+# @tm.measure_time
+# def configure_input_output_places_tm(cromossome, input_places, output_places, output_place, net):
+#     return configure_input_output_places(cromossome, input_places, output_places, output_place, net)
+#
+# @tm.measure_time
+# def configure_output_places_tm(cromossome, input_places, output_places, net):
+#     return configure_output_places(cromossome, input_places, output_places, net)
+#
+# @tm.measure_time
+# def add_input_to_transition_arcs_tm(cromossome, input_places, transitions, net):
+#     return add_input_to_transition_arcs(cromossome, input_places, transitions, net)
+#
+# @tm.measure_time
+# def add_output_to_transition_arcs_tm(cromossome, input_places, output_places, transitions, net):
+#     return add_output_to_transition_arcs(cromossome, input_places, output_places, transitions, net)
+# @tm.measure_time
+# def create_petri_net_tm(cromossome, alphabet):
+#     return create_petri_net(cromossome, alphabet)
+# @tm.measure_time
+# def create_pn_tm(cromossome, alphabet, island, generation, log_name, round):
+#     return create_pn(cromossome, alphabet, island, generation, log_name, round)
+# @tm.measure_time
+# def write_and_show_best_pn_tm(best_island_number, log_name, round, generation_best, bestone_file):
+#     return write_and_show_best_pn(best_island_number, log_name, round, generation_best, bestone_file)
+# @tm.measure_time
+# def is_sound_tm(cromossome, alphabet):
+#     return is_sound(cromossome, alphabet)

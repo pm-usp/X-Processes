@@ -1,3 +1,4 @@
+import tm
 import csv
 import platform
 import os
@@ -9,6 +10,7 @@ if so == 'Linux':
     import errno
 
 
+@tm.measure_time
 def write_to_locked_file(file_name, data):
     fileToOpen = open(file_name, 'a')
     while True:
@@ -26,7 +28,8 @@ def write_to_locked_file(file_name, data):
                 time.sleep(0.01)
 
 
-def record_evolution(log_name, round, parameters, island_number, highest_values, fitness_evolution, alphabet, best_individual, island_start, island_end, island_duration, current_generation, algo_option):     
+@tm.measure_time
+def record_evolution(log_name, round, parameters, island_number, highest_values, fitness_evolution, alphabet, best_individual, island_start, island_end, island_duration, current_generation, algo_option):
     values_of_parameters = ''                                                                                           
     for i in range(len(parameters)):                                                                                    
         values_of_parameters = values_of_parameters + str(parameters[i]) + '	'                                       
@@ -53,6 +56,7 @@ def record_evolution(log_name, round, parameters, island_number, highest_values,
     return
 
 
+@tm.measure_time
 def write_locked_bestone(file_name, data):
     fileToOpen = open(file_name, 'w')
     while True:
@@ -70,6 +74,7 @@ def write_locked_bestone(file_name, data):
                 time.sleep(0.01)
 
 
+@tm.measure_time
 def record_bestone(island_number, highest_hm, generation, bestone_file, island_duration):
     if not os.path.exists(bestone_file):
         if so == 'Linux':
@@ -110,3 +115,19 @@ def record_bestone(island_number, highest_hm, generation, bestone_file, island_d
                     bestone.write(str(island_duration) + '\n')
                     bestone.close()
     return
+
+# @tm.measure_time
+# def write_to_locked_file_tm(file_name, data):
+#     return write_to_locked_file(file_name, data)
+#
+# @tm.measure_time
+# def record_evolution_tm(log_name, round, parameters, island_number, highest_values, fitness_evolution, alphabet, best_individual, island_start, island_end, island_duration, current_generation, algo_option):
+#     return record_evolution(log_name, round, parameters, island_number, highest_values, fitness_evolution, alphabet, best_individual, island_start, island_end, island_duration, current_generation, algo_option)
+#
+# @tm.measure_time
+# def write_locked_bestone(file_name, data):
+#     return write_locked_bestone(file_name, data)
+#
+# @tm.measure_time
+# def record_bestone(island_number, highest_hm, generation, bestone_file, island_duration):
+#     return record_bestone(island_number, highest_hm, generation, bestone_file, island_duration)

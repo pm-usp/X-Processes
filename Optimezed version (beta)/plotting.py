@@ -1,10 +1,12 @@
-import matplotlib.pyplot as plt                                                                                         
+import tm
+import matplotlib.pyplot as plt
 import islands as isl                                                                                                   
 from ast import literal_eval                                                                                            
 plt.switch_backend('agg')
 
 
-def plot_evolution_per_island(vetor_fitness, log_name, round, island_number):                                   
+@tm.measure_time
+def plot_evolution_per_island(vetor_fitness, log_name, round, island_number):
     v_min = [i[0] for i in vetor_fitness]                                                                               
     v_max = [i[1] for i in vetor_fitness]                                                                               
     v_avg = [i[2] for i in vetor_fitness]                                                                               
@@ -24,7 +26,8 @@ def plot_evolution_per_island(vetor_fitness, log_name, round, island_number):
     return                                                                                                              
 
 
-def plot_evolution_integrated(log_name, round, number_of_islands):                                              
+@tm.measure_time
+def plot_evolution_integrated(log_name, round, number_of_islands):
     fitness_vector_of_vector = []                                                                                       
     for i in range(number_of_islands):                                                                                  
         vetor_fitness = []                                                                                              
@@ -55,3 +58,11 @@ def plot_evolution_integrated(log_name, round, number_of_islands):
     plt.savefig(name)                                                                                                   
     plt.clf()                                                                                                           
     return                                                                                                              
+
+# @tm.measure_time
+# def plot_evolution_per_island_tm(vetor_fitness, log_name, round, island_number):
+#     return plot_evolution_per_island(vetor_fitness, log_name, round, island_number)
+#
+# @tm.measure_time
+# def plot_evolution_integrated_tm(log_name, round, number_of_islands):
+#     return plot_evolution_integrated(log_name, round, number_of_islands)

@@ -1,9 +1,11 @@
+import tm
 import random as ran
 import numpy as np
 import copy
 from numba import njit, prange
 from concurrent.futures import ThreadPoolExecutor
 
+@tm.measure_time
 def parent_selection(evaluated_population):
     pop_size = len(evaluated_population[1])
     opponent_1, opponent_2 = ran.sample(range(pop_size), 2)
@@ -21,6 +23,7 @@ def parent_selection(evaluated_population):
         else:
             return opponent_1 if o1_values[3] >= o2_values[3] else opponent_2
 
+@tm.measure_time
 def crossover_per_process(crossover_probability, max_perc_of_num_tasks_for_crossover, cromossome_1, cromossome_2):
     if ran.random() < crossover_probability:
         max_length = len(cromossome_1) - 1
@@ -66,6 +69,7 @@ def crossover_per_process(crossover_probability, max_perc_of_num_tasks_for_cross
             return offspring_2, offspring_1
     return cromossome_1, cromossome_2
 
+@tm.measure_time
 def mutation(cromossome, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome):
     if ran.random() < task_mutation_probability:
         task_mutation(cromossome, max_perc_of_num_tasks_for_task_mutation, reference_cromossome)
@@ -73,6 +77,7 @@ def mutation(cromossome, task_mutation_probability, gateway_mutation_probability
         gateway_mutation(cromossome, max_perc_of_num_tasks_for_gateway_mutation)
     return
 
+#-----------------------------------------------------------------------------------------------------------------------
 @njit
 def mutate_task(cromossome, chosen_task, reference_cromossome, reverse=False):
     cromossome_len = len(cromossome)
@@ -112,7 +117,9 @@ def mutate_and_choose(cromossome, reference_cromossome, val1, val2):
         if count > (cromossome_len * 0.25):
             return val1
     return chosen_task2
+#-----------------------------------------------------------------------------------------------------------------------
 
+@tm.measure_time
 def adjust_produced_consumed_tokens(cromossome):
     # with ThreadPoolExecutor() as executor:
     #     future_xor_consumed = executor.submit(count_consumed_XOR_tokens, cromossome)
@@ -135,6 +142,7 @@ def adjust_produced_consumed_tokens(cromossome):
         else:
             increase_number_of_consumed_tokens(cromossome, xor_produced, and_produced)
 
+@tm.measure_time
 def task_mutation(cromossome, max_perc_of_num_tasks_for_task_mutation, reference_cromossome):
     cromossome_len = len(cromossome)
     max_number_of_tasks = 1 if max_perc_of_num_tasks_for_task_mutation == -1 else max(1, int(max_perc_of_num_tasks_for_task_mutation * (cromossome_len - 1)))
@@ -160,6 +168,7 @@ def task_mutation(cromossome, max_perc_of_num_tasks_for_task_mutation, reference
             return
         cromossome = temp_cromossome
 
+@tm.measure_time
 def gateway_mutation(cromossome, max_perc_of_num_tasks_for_gateway_mutation):
     len_cromossome = len(cromossome)
     if max_perc_of_num_tasks_for_gateway_mutation == -1:
@@ -174,10 +183,12 @@ def gateway_mutation(cromossome, max_perc_of_num_tasks_for_gateway_mutation):
     for _ in range(number_of_tasks):
         mutate_and_adjust(cromossome, len_cromossome)
 
+@tm.measure_time
 def mutate_and_adjust(cromossome, len_cromossome):
     gateway_mutation_core(cromossome, len_cromossome)
     adjust_produced_consumed_tokens(cromossome)
 
+#-----------------------------------------------------------------------------------------------------------------------
 @njit
 def gateway_mutation_core(cromossome, len_cromossome):
     chosen_operator_position = ran.random()
@@ -394,7 +405,9 @@ def is_there_at_least_two_column_active_tasks(cromossome, chosen_task):
             if count == 2:
                 return True
     return False
+#-----------------------------------------------------------------------------------------------------------------------
 
+@tm.measure_time
 def elitism(population, elitism_percentage, sorted_evaluated_aux_population, sorted_evaluated_population, auxiliary_population, evaluated_aux_population, evaluated_population):
     elitism_count = round(len(population) * elitism_percentage)
     aux_pop_len = len(sorted_evaluated_aux_population)
@@ -414,3 +427,68 @@ def elitism(population, elitism_percentage, sorted_evaluated_aux_population, sor
         else:
             break
     evaluated_aux_population[0] = total_evaluation_aux_population
+
+# @tm.measure_time
+# def parent_selection(evaluated_population):
+#     return parent_selection(evaluated_population)
+# @tm.measure_time
+# def crossover_per_process_tm(crossover_probability, max_perc_of_num_tasks_for_crossover, cromossome_1, cromossome_2):
+#     return crossover_per_process(crossover_probability, max_perc_of_num_tasks_for_crossover, cromossome_1, cromossome_2)
+@tm.measure_time
+def mutation_tm(cromossome, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome):
+    return mutation(cromossome, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome)
+@tm.measure_time
+def mutate_task_tm(cromossome, chosen_task, reference_cromossome, reverse=False):
+    return mutate_task(cromossome, chosen_task, reference_cromossome, reverse=False)
+# @tm.measure_time
+# def adjust_produced_consumed_tokens_tm(cromossome):
+#     return adjust_produced_consumed_tokens(cromossome)
+# @tm.measure_time
+# def task_mutation_tm(cromossome, max_perc_of_num_tasks_for_task_mutation, reference_cromossome):
+#     return task_mutation(cromossome, max_perc_of_num_tasks_for_task_mutation, reference_cromossome)
+# @tm.measure_time
+def mutate_and_choose_tm(cromossome, reference_cromossome, val1, val2):
+    return mutate_and_choose(cromossome, reference_cromossome, val1, val2)
+@tm.measure_time
+def gateway_mutation_tm(cromossome, max_perc_of_num_tasks_for_gateway_mutation):
+    return  gateway_mutation(cromossome, max_perc_of_num_tasks_for_gateway_mutation)
+@tm.measure_time
+def count_produced_XOR_tokens_tm(cromossome):
+    return count_produced_XOR_tokens(cromossome)
+@tm.measure_time
+def count_consumed_XOR_tokens_tm(cromossome):
+    return count_consumed_XOR_tokens(cromossome)
+@tm.measure_time
+def count_produced_AND_tokens_tm(cromossome):
+    return count_produced_AND_tokens(cromossome)
+@tm.measure_time
+def count_consumed_AND_tokens_tm(cromossome):
+    return count_consumed_AND_tokens(cromossome)
+@tm.measure_time
+def increase_number_of_produced_tokens_tm(cromossome, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens):
+    return increase_number_of_produced_tokens(cromossome, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens)
+
+@tm.measure_time
+def increase_number_of_consumed_tokens_tm(cromossome, number_of_produced_XOR_tokens, number_of_produced_AND_tokens):
+    return increase_number_of_consumed_tokens(cromossome, number_of_produced_XOR_tokens, number_of_produced_AND_tokens)
+@tm.measure_time
+def decrease_number_of_produced_tokens_tm(cromossome, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens):
+    return decrease_number_of_produced_tokens(cromossome, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens)
+@tm.measure_time
+def decrease_number_of_consumed_tokens_tm(cromossome, number_of_produced_XOR_tokens, number_of_produced_AND_tokens):
+    return decrease_number_of_consumed_tokens(cromossome, number_of_produced_XOR_tokens, number_of_produced_AND_tokens)
+@tm.measure_time
+def is_there_at_least_one_raw_active_task_tm(cromossome, chosen_task):
+    return is_there_at_least_one_raw_active_task(cromossome, chosen_task)
+@tm.measure_time
+def is_there_at_least_one_column_active_task_tm(cromossome, chosen_task):
+    return is_there_at_least_one_column_active_task(cromossome, chosen_task)
+@tm.measure_time
+def is_there_at_least_one_column_active_task_tm(cromossome, chosen_task):
+    return is_there_at_least_one_column_active_task(cromossome, chosen_task)
+@tm.measure_time
+def is_there_at_least_two_column_active_tasks_tm(cromossome, chosen_task):
+    return is_there_at_least_two_column_active_tasks(cromossome, chosen_task)
+# @tm.measure_time
+# def elitism_tm(population, elitism_percentage, sorted_evaluated_aux_population, sorted_evaluated_population, auxiliary_population, evaluated_aux_population, evaluated_population):
+#     return elitism(population, elitism_percentage, sorted_evaluated_aux_population, sorted_evaluated_population, auxiliary_population, evaluated_aux_population, evaluated_population)
