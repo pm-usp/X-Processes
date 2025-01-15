@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<pnml>
+  <net id="" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+    <name>
+      <text></text>
+    </name>
+    <page id="n0">
+      <place id="source">
+        <name>
+          <text>source</text>
+        </name>
+        <initialMarking>
+          <text>1</text>
+        </initialMarking>
+      </place>
+      <place id="exi_Gateway_split_0">
+        <name>
+          <text>exi_Gateway_split_0</text>
+        </name>
+      </place>
+      <place id="exi_Gateway_split_1">
+        <name>
+          <text>exi_Gateway_split_1</text>
+        </name>
+      </place>
+      <place id="ent_Gateway_join_3">
+        <name>
+          <text>ent_Gateway_join_3</text>
+        </name>
+      </place>
+      <place id="sink">
+        <name>
+          <text>sink</text>
+        </name>
+      </place>
+      <place id="ent_Gateway_join_1">
+        <name>
+          <text>ent_Gateway_join_1</text>
+        </name>
+      </place>
+      <transition id="sfl_Flow_1_1">
+        <name>
+          <text>sfl_Flow_1_1</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="aa4cde5e-57f4-46e7-880c-490ec09df907"/>
+      </transition>
+      <transition id="8b130eb8-f54a-4e0f-803a-a12280b1ff8f">
+        <name>
+          <text>8b130eb8-f54a-4e0f-803a-a12280b1ff8f</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="df6801e7-bb43-4333-bb8a-e3d127a83c5a"/>
+      </transition>
+      <transition id="Activity_3">
+        <name>
+          <text>Queued</text>
+        </name>
+      </transition>
+      <transition id="Activity_4">
+        <name>
+          <text>Unmatched</text>
+        </name>
+      </transition>
+      <transition id="Activity_1">
+        <name>
+          <text>Accepted</text>
+        </name>
+      </transition>
+      <transition id="sfl_Flow_0_1">
+        <name>
+          <text>sfl_Flow_0_1</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="56b79dfb-4a0c-47b3-a6ff-f674878abb5f"/>
+      </transition>
+      <transition id="Activity_2">
+        <name>
+          <text>Completed</text>
+        </name>
+      </transition>
+      <transition id="sfl_Flow_0_3">
+        <name>
+          <text>sfl_Flow_0_3</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="ae5a3e0c-f829-4ab2-8128-b8f332343b61"/>
+      </transition>
+      <transition id="sfl_Flow_1_3">
+        <name>
+          <text>sfl_Flow_1_3</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="152baaa1-fe8f-48b4-9f0c-7c9cf0e9c320"/>
+      </transition>
+      <arc id="2936927005200" source="Activity_1" target="exi_Gateway_split_1"/>
+      <arc id="2936927010000" source="Activity_3" target="ent_Gateway_join_1"/>
+      <arc id="2936926995088" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
+      <arc id="2936926997712" source="sfl_Flow_0_3" target="ent_Gateway_join_3"/>
+      <arc id="2936926998288" source="Activity_2" target="sink"/>
+      <arc id="2936926997904" source="Activity_4" target="ent_Gateway_join_1"/>
+      <arc id="2936927000400" source="ent_Gateway_join_1" target="Activity_1"/>
+      <arc id="2936927000144" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
+      <arc id="2936927004560" source="ent_Gateway_join_3" target="Activity_3"/>
+      <arc id="2936927000656" source="exi_Gateway_split_1" target="sfl_Flow_1_3"/>
+      <arc id="2936927008656" source="exi_Gateway_split_1" target="Activity_2"/>
+      <arc id="2936927000080" source="source" target="8b130eb8-f54a-4e0f-803a-a12280b1ff8f"/>
+      <arc id="2936927004304" source="sfl_Flow_0_1" target="ent_Gateway_join_1"/>
+      <arc id="2936927007312" source="8b130eb8-f54a-4e0f-803a-a12280b1ff8f" target="exi_Gateway_split_0"/>
+      <arc id="2936927000976" source="exi_Gateway_split_0" target="Activity_4"/>
+      <arc id="2936927009104" source="exi_Gateway_split_0" target="sfl_Flow_0_3"/>
+      <arc id="2936927010192" source="sfl_Flow_1_3" target="ent_Gateway_join_3"/>
+      <arc id="2936926998544" source="exi_Gateway_split_0" target="sfl_Flow_0_1"/>
+    </page>
+    <finalmarkings>
+      <marking>
+        <place idref="sink">
+          <text>1</text>
+        </place>
+      </marking>
+    </finalmarkings>
+  </net>
+</pnml>

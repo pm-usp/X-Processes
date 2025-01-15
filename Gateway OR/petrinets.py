@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import datetime as dt
 import os
+import hashlib
 
 def get_gateway_type(value):
     if value == 3:
@@ -20,6 +21,8 @@ def generate_bpmn_from_cromossome(cromossome, alphabet):
     activities = []
     gateways = {}
     for idx, activity in enumerate(alphabet):
+        if cromossome[idx, -1] == -1 and cromossome[-1, idx] == -1:
+            continue
         task = ET.SubElement(process, "bpmn:task", {"id": f"Activity_{idx}", "name": activity})
         activities.append(task)
     for idx, value in enumerate(cromossome[:, -1]):
@@ -80,8 +83,8 @@ def generate_bpmn_from_cromossome(cromossome, alphabet):
             process.remove(activity)
     return ET.tostring(bpmn, encoding="utf-8").decode("utf-8")
 
-def create_pn(cromossome, alphabet, island, generation, log_name, round):
-    petrinet, initial_marking, final_marking = create_petri_net(cromossome, alphabet, log_name, round, island, generation)
+def create_pn(cromossome, alphabet, island, generation, log_name, round, cache_petri_net, petri_net_lock):
+    petrinet, initial_marking, final_marking = create_petri_net(cromossome, alphabet, log_name, round, island, generation, cache_petri_net, petri_net_lock)
     log_name = log_name.replace("\\", "-").replace("/", "-")
     pm4py.write_pnml(petrinet, initial_marking, final_marking, 'petri-nets/temp/' + str(log_name) + '-' + str(round) + '-' + str(island) + '-' + str(generation))
     return
@@ -96,7 +99,14 @@ def write_and_show_best_pn(best_island_number, log_name, round, generation_best,
     pm4py.view_bpmn(bpmn_model)
     return
 
-def create_petri_net(cromossome, alphabet, log_name, round, island, generation):
+def create_petri_net(cromossome, alphabet, log_name, round, island, generation, cache_petri_net, petri_net_lock):
+    # with petri_net_lock:
+    cromossomo_hash = hash_cromossomo_petri_net(cromossome)
+    cached_value = cache_petri_net.get(cromossomo_hash)
+    if isinstance(cached_value, tuple) and len(cached_value) == 3:
+        net, im, fm = cached_value
+        if net is not None and im is not None and fm is not None:
+            return cached_value
     bpmn_xml = generate_bpmn_from_cromossome(cromossome, alphabet)
     time = str(dt.datetime.now()).replace(" ", "-").replace(":", "-").replace(".", "-")
     file_path = 'petri-nets/temp/' + str(log_name.replace("\\", "-").replace("/", "-")) + '-' + str(round) + '-' + str(island) + '-' + str(generation) + '-' + str(time) + '.bpmn'
@@ -107,9 +117,32 @@ def create_petri_net(cromossome, alphabet, log_name, round, island, generation):
     net = pm4py.reduce_petri_net_invisibles(net)
     net, im, fm = pm4py.reduce_petri_net_implicit_places(net, im, fm)
     os.remove(file_path)
+    # file_path2 = 'petri-nets/temp/' + str(log_name.replace("\\", "-").replace("/", "-")) + '-' + str(round) + '-' + str(island) + '-' + str(generation) + '-' + str(time) + '.pnml'
+    # pm4py.write_pnml(net, im, fm, file_path2)
+    if isinstance(net, object) and isinstance(im, object) and isinstance(fm, object):
+        if cromossomo_hash not in cache_petri_net:
+            import sys
+            sys.setrecursionlimit(10000)
+            cache_petri_net[cromossomo_hash] = (net, im, fm)
     return net, im, fm
 
-def is_sound(cromossome, alphabet, log_name, round, island, generation):
-    petrinet, initial_marking, final_marking = create_petri_net(cromossome, alphabet, log_name, round, island, generation)
+def is_sound(cromossome, alphabet, log_name, round, island, generation, cache_soundness, cache_petri_net, soundness_lock, petri_net_lock):
+    # with soundness_lock:
+    cromossomo_hash = hash_cromossomo_soundness(cromossome)
+    if cromossomo_hash in cache_soundness:
+        if isinstance(cache_soundness.get(cromossomo_hash), bool):
+            return cache_soundness[cromossomo_hash]
+    petrinet, initial_marking, final_marking = create_petri_net(cromossome, alphabet, log_name, round, island, generation, cache_petri_net, petri_net_lock)
     res = pm4py.check_soundness(petrinet, initial_marking, final_marking)
+    if isinstance(res[0], bool):
+        if cromossomo_hash not in cache_soundness:
+            cache_soundness[cromossomo_hash] = res[0]
     return res[0]
+
+def hash_cromossomo_soundness(cromossomo):
+    cromossomo_str = str(cromossomo.tolist())
+    return hashlib.sha256(cromossomo_str.encode()).hexdigest()
+
+def hash_cromossomo_petri_net(cromossomo):
+    cromossomo_str = str(cromossomo.tolist())
+    return hashlib.sha256(cromossomo_str.encode()).hexdigest()

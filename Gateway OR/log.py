@@ -23,5 +23,5 @@ def import_log(inputlog):
     unique_traces = pd.Series(data2_cleaned).drop_duplicates()
     with concurrent.futures.ThreadPoolExecutor() as executor:
         log = list(executor.map(lambda x: [event for event in x if pd.notna(event)], unique_traces))
-    print('Number of traces in pre-processed log, excluding two or more sequences of the same task:', len(log))
+    #print('Number of traces in pre-processed log, excluding two or more sequences of the same task:', len(log))
     return log, name_inputlog, xes_log
