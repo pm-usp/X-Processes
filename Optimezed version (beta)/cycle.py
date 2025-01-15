@@ -7,14 +7,15 @@ import petrinets as pn
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+@tm.measure_time
 def process_individual_pair(individual_pair, population, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome, alphabet):
-    chosen_individual_1 = opr.parent_selection(evaluated_population)
-    chosen_individual_2 = opr.parent_selection(evaluated_population)
+    chosen_individual_1 = opr.parent_selection_tm(evaluated_population)
+    chosen_individual_2 = opr.parent_selection_tm(evaluated_population)
     offspring1 = np.copy(population[chosen_individual_1])
     offspring2 = np.copy(population[chosen_individual_2])
-    offspring1, offspring2 = opr.crossover_per_process(crossover_probability, max_perc_of_num_tasks_for_crossover, offspring1, offspring2)
-    opr.mutation(offspring1, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome)
-    opr.mutation(offspring2, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome)
+    offspring1, offspring2 = opr.crossover_per_process_tm(crossover_probability, max_perc_of_num_tasks_for_crossover, offspring1, offspring2)
+    opr.mutation_tm(offspring1, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome)
+    opr.mutation_tm(offspring2, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome)
     number_of_sound_attempts = 0
     alphabet_len_half = int(len(alphabet) * 0.5)
     while not pn.is_sound(offspring1, alphabet) or not pn.is_sound(offspring2, alphabet):
@@ -24,11 +25,13 @@ def process_individual_pair(individual_pair, population, evaluated_population, c
             break
         else:
             number_of_sound_attempts += 1
-            offspring1, offspring2 = opr.crossover_per_process(crossover_probability, max_perc_of_num_tasks_for_crossover, offspring1, offspring2)
-            opr.mutation(offspring1, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome)
-            opr.mutation(offspring2, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome)
+            offspring1, offspring2 = opr.crossover_per_process_tm(crossover_probability, max_perc_of_num_tasks_for_crossover, offspring1, offspring2)
+            opr.mutation_tm(offspring1, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome)
+            opr.mutation_tm(offspring2, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome)
+
     return individual_pair, offspring1, offspring2
 
+@tm.measure_time
 def generation(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
     auxiliary_population = np.copy(population)
     population_len = len(population)
@@ -60,16 +63,19 @@ def generation(population, reference_cromossome, evaluated_population, crossover
         evaluated_aux_population = fit.evaluate_population(auxiliary_population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight)
         elite_count = int(elitism_percentage * population_len)
         sorted_evaluated_aux_population = sorted(evaluated_aux_population[1][:elite_count], reverse=True, key=itemgetter(0, 4, 3))
-        opr.elitism(population, elitism_percentage, sorted_evaluated_aux_population, sorted_evaluated_population, auxiliary_population, evaluated_aux_population, evaluated_population)
+        opr.elitism_tm(population, elitism_percentage, sorted_evaluated_aux_population, sorted_evaluated_population, auxiliary_population, evaluated_aux_population, evaluated_population)
         evaluated_new_population = copy.deepcopy(evaluated_aux_population)
     else:
         evaluated_new_population = fit.evaluate_population(auxiliary_population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight)
+
     return auxiliary_population, evaluated_new_population
 
+@tm.measure_time
 def take_first(elem):
     return elem[0]                                                                                                      
 
-def choose_highest(evaluated_population):                                                                               
+@tm.measure_time
+def choose_highest(evaluated_population):
     highest_value = [-1, -1, -1, -1, -1]                                                                                
     sorted_evaluated_population = sorted(evaluated_population[1], reverse=True, key=take_first)
     highest_value[0] = sorted_evaluated_population[0][0]
@@ -77,35 +83,51 @@ def choose_highest(evaluated_population):
     highest_value[2] = sorted_evaluated_population[0][2]                                                                
     highest_value[3] = sorted_evaluated_population[0][3]                                                                
     highest_value[4] = sorted_evaluated_population[0][4]                                                                
-    highest_position = sorted_evaluated_population[0][5]                                                                
+    highest_position = sorted_evaluated_population[0][5]
+
     return (highest_value, highest_position), sorted_evaluated_population                                               
 
-def choose_lowest(sorted_evaluated_population):                                                                         
+@tm.measure_time
+def choose_lowest(sorted_evaluated_population):
     return sorted_evaluated_population[-1][0]                                                                           
 
+@tm.measure_time
 def calculate_average(evaluated_population):
     value_sum = 0                                                                                                       
     for i in range(len(evaluated_population[1])):                                                                       
         value_sum += evaluated_population[1][i][0]
+
     return value_sum / len(evaluated_population[1])
 
 #Time measurement approch (Guilherme)
-@tm.measure_time
-def process_individual_pair_tm(individual_pair, population, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome, alphabet):
-    return process_individual_pair(individual_pair, population, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome, alphabet)
+# @tm.measure_time
+# def process_individual_pair_tm(individual_pair, population, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome, alphabet):
+#     return process_individual_pair(individual_pair, population, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome, alphabet)
+#
+# @tm.measure_time
+# def generation_tm(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
+#     return generation(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight)
+# @tm.measure_time
+# def take_first_tm(elem):
+#     return take_first(elem)
+# @tm.measure_time
+# def choose_highest_tm(evaluated_population):
+#     return choose_highest(evaluated_population)
+# @tm.measure_time
+# def choose_lowest_tm(sorted_evaluated_population):
+#     return choose_lowest(sorted_evaluated_population)
+# @tm.measure_time
+# def calculate_average_tm(evaluated_population):
+#     return calculate_average(evaluated_population)
 
-@tm.measure_time
-def generation_tm(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
-    return generation(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight)
-@tm.measure_time
-def take_first_tm(elem):
-    return take_first(elem)
-@tm.measure_time
-def choose_highest_tm(evaluated_population):
-    return choose_highest(evaluated_population)
-@tm.measure_time
-def choose_lowest_tm(sorted_evaluated_population):
-    return choose_lowest(sorted_evaluated_population)
-@tm.measure_time
-def calculate_average_tm(evaluated_population):
-    return calculate_average(evaluated_population)
+# def so():
+#     print(so.__name__,1)
+#
+# @tm.measure_time
+# def socorro():
+#     return so()
+#
+# def __main__():
+#     socorro()
+#
+# __main__()

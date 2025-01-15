@@ -2,7 +2,9 @@ import pandas as pd
 import pm4py
 import re
 import concurrent.futures
+import tm
 
+@tm.measure_time
 def remove_consecutive_repetitions(trace):
     trace_length = len(trace)
     if trace_length < 3:
@@ -13,6 +15,7 @@ def remove_consecutive_repetitions(trace):
             result.append(trace[i])
     return result
 
+@tm.measure_time
 def import_log(inputlog):
     xes_log = pm4py.read_xes(inputlog)
     name_inputlog = re.search(r"[^//]*$", inputlog).group(0)

@@ -1,5 +1,4 @@
 ﻿import tm
-
 import random as ran
 import fitness as fit
 import petrinets as pn
@@ -9,9 +8,11 @@ from numba import njit, prange
 from joblib import Parallel, delayed
 from concurrent.futures import ThreadPoolExecutor
 
+@tm.measure_time
 def process_trace(trace):
     return set(trace)
 
+@tm.measure_time
 def create_alphabet(log):
     alphabet_set = set()
 
@@ -27,18 +28,19 @@ def create_alphabet(log):
     alphabet = np.append(alphabet, 'end')
     print('Number of activities:', len(alphabet) - 2)
     return alphabet
-
+@tm.measure_time
 def process_entry(entry):
     entry.insert(0, 'begin')
     entry.append('end')
     return entry
-
+@tm.measure_time
 def process_log(log):
     # with ThreadPoolExecutor() as executor:
     #     log = list(executor.map(process_entry, log)
     log = [process_entry(entry) for entry in log]
     return log
 
+@tm.measure_time
 def initialize_population(population_size, alphabet, log, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
     population = np.zeros((population_size, (len(alphabet) + 1), (len(alphabet)) + 1), dtype=np.int64)
     reference_cromossome = create_DFG(log, alphabet)
@@ -47,12 +49,13 @@ def initialize_population(population_size, alphabet, log, xes_log, algo_option, 
     for i in range(population_size):
         population[i] = create_initial_individual(population[i], alphabet, reference_cromossome)
         print(population[i])
-        while not pn.is_sound(population[i], alphabet):
+        while not pn.is_sound_tm(population[i], alphabet):
             population[i] = initialize_individual(len(alphabet) + 1)
             population[i] = create_initial_individual(population[i], alphabet, reference_cromossome)
     population[0] = reference_cromossome
-    return (population, fit.evaluate_population(population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight), reference_cromossome)
+    return (population, fit.evaluate_population_tm(population, alphabet, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight), reference_cromossome) # <- alteração
 
+#-----------------------------------------------------------------------------------------------------------------------
 @njit
 def initialize_individual(number_of_tasks):
     return np.zeros((number_of_tasks, number_of_tasks), dtype=np.int64)  # Explicitly specify dtype as np.int64
@@ -60,7 +63,9 @@ def initialize_individual(number_of_tasks):
 @njit
 def create_empty_individual_task(number_of_tasks):
     return [0] * (number_of_tasks + 1)
+#-----------------------------------------------------------------------------------------------------------------------
 
+@tm.measure_time
 def create_DFG(log, alphabet):
     DFG = [create_empty_individual_task(len(alphabet)) for _ in range(len(alphabet) + 1)]
     for trace in log:
@@ -71,16 +76,19 @@ def create_DFG(log, alphabet):
     return DFG
 
 
+@tm.measure_time
 def get_task_id(task, alphabet):
     return np.where(alphabet == task)[0][0]
 
 
+@tm.measure_time
 def create_initial_individual(cromossome, alphabet, reference_cromossome):
     cromossome = create_tasks(alphabet, reference_cromossome, cromossome)
     cromossome, number_of_produced_XOR_tokens, number_of_consumed_XOR_tokens, number_of_produced_AND_tokens, number_of_consumed_AND_tokens = create_AND_gateways(cromossome)
     cromossome = increase_or_decrease_tokens(cromossome, number_of_produced_XOR_tokens, number_of_consumed_XOR_tokens, number_of_produced_AND_tokens, number_of_consumed_AND_tokens)
     return cromossome
 
+#-----------------------------------------------------------------------------------------------------------------------
 @njit
 def create_tasks(alphabet, reference_cromossome, cromossome):
     valid_start_tasks = [i for i in range(1, len(alphabet) - 1) if reference_cromossome[0][i] == 1] ### new
@@ -98,14 +106,14 @@ def create_tasks(alphabet, reference_cromossome, cromossome):
                 break
     # for n in prange(len(cromossome) - 2):
     for n in range(len(cromossome) - 2):
-        if op.is_there_at_least_one_raw_active_task(cromossome, n) == False:
+        if op.is_there_at_least_one_raw_active_task_tm(cromossome, n) == False:
             valid_tasks = [i for i in range(1, len(cromossome) - 1) if reference_cromossome[n][i] == 1]
             valid_tasks = np.array(valid_tasks)
             if valid_tasks.size > 0:
                 cromossome[n][np.random.choice(valid_tasks)] = 1
     # for n in prange(1, len(cromossome) - 1):
     for n in range(1, len(cromossome) - 1):
-        if op.is_there_at_least_one_column_active_task(cromossome, n) == False:
+        if op.is_there_at_least_one_column_active_task_tm(cromossome, n) == False:
             valid_tasks = [i for i in range(0, len(cromossome) - 2) if reference_cromossome[i][n] == 1]
             valid_tasks = np.array(valid_tasks)
             if valid_tasks.size > 0:
@@ -123,7 +131,8 @@ def process_cromossome_to_create_AND_gateways(cromossome):
         if np.random.random() < 0.5:
             cromossome[-1][n] = 1
     return cromossome
-
+#-----------------------------------------------------------------------------------------------------------------------
+@tm.measure_time
 def create_AND_gateways(cromossome):
     cromossome = process_cromossome_to_create_AND_gateways(cromossome)
 
@@ -136,43 +145,44 @@ def create_AND_gateways(cromossome):
     #     number_of_consumed_XOR_tokens = future_consumed_XOR.result()
     #     number_of_produced_AND_tokens = future_produced_AND.result()
     #     number_of_consumed_AND_tokens = future_consumed_AND.result()
-    number_of_produced_XOR_tokens = op.count_produced_XOR_tokens(cromossome)
-    number_of_consumed_XOR_tokens = op.count_consumed_XOR_tokens(cromossome)
-    number_of_produced_AND_tokens = op.count_produced_AND_tokens(cromossome)
-    number_of_consumed_AND_tokens = op.count_consumed_AND_tokens(cromossome)
+    number_of_produced_XOR_tokens = op.count_produced_XOR_tokens_tm(cromossome)
+    number_of_produced_AND_tokens = op.count_produced_AND_tokens_tm(cromossome)
+    number_of_consumed_XOR_tokens = op.count_consumed_XOR_tokens_tm(cromossome)
+    number_of_consumed_AND_tokens = op.count_consumed_AND_tokens_tm(cromossome)
 
     return (cromossome, number_of_produced_XOR_tokens, number_of_consumed_XOR_tokens, number_of_produced_AND_tokens, number_of_consumed_AND_tokens)
 
+@tm.measure_time
 def increase_or_decrease_tokens(cromossome, number_of_produced_XOR_tokens, number_of_consumed_XOR_tokens, number_of_produced_AND_tokens, number_of_consumed_AND_tokens):
     if (number_of_consumed_XOR_tokens != number_of_produced_XOR_tokens) or (number_of_consumed_AND_tokens != number_of_produced_AND_tokens):
         if np.random.rand() < 0.5:
-            op.increase_number_of_produced_tokens(cromossome, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens)
+            op.increase_number_of_produced_tokens_tm(cromossome, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens)
         else:
-            op.increase_number_of_consumed_tokens(cromossome, number_of_produced_XOR_tokens, number_of_produced_AND_tokens)
+            op.increase_number_of_consumed_tokens_tm(cromossome, number_of_produced_XOR_tokens, number_of_produced_AND_tokens)
     return cromossome
 
 ########################################################################################################################
 
-@tm.measure_time
-def process_trace_tm(trace):
-    return process_trace(trace)
-
-@tm.measure_time
-def create_alphabet_tm(log):
-    return  create_alphabet(log)
-
-@tm.measure_time
-def process_entry_tm(entry):
-    return process_entry(entry)
-
-@tm.measure_time
-def process_log_tm(log):
-    return process_log(log)
-
-@tm.measure_time
-def initialize_population_tm(population_size, alphabet, log, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
-    return initialize_population(population_size, alphabet, log, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight)
-
+# @tm.measure_time
+# def process_trace_tm(trace):
+#     return process_trace(trace)
+#
+# @tm.measure_time
+# def create_alphabet_tm(log):
+#     return  create_alphabet(log)
+#
+# @tm.measure_time
+# def process_entry_tm(entry):
+#     return process_entry(entry)
+#
+# @tm.measure_time
+# def process_log_tm(log):
+#     return process_log(log)
+#
+# @tm.measure_time
+# def initialize_population_tm(population_size, alphabet, log, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
+#     return initialize_population(population_size, alphabet, log, xes_log, algo_option, fitness_weight, precision_weight, generalization_weight, simplicity_weight)
+#
 @tm.measure_time
 def initialize_individual_tm(number_of_tasks):
     return initialize_individual(number_of_tasks)
@@ -181,18 +191,18 @@ def initialize_individual_tm(number_of_tasks):
 def create_empty_individual_task_tm(number_of_tasks):
     return create_empty_individual_task(number_of_tasks)
 
-@tm.measure_time
-def create_DFG_tm(log, alphabet):
-    return  create_DFG(log, alphabet)
-
-@tm.measure_time
-def get_task_id_tm(task, alphabet):
-    return get_task_id(task, alphabet)
-
-@tm.measure_time
-def create_initial_individual_tm(cromossome, alphabet, reference_cromossome):
-    return create_initial_individual(cromossome, alphabet, reference_cromossome)
-
+# @tm.measure_time
+# def create_DFG_tm(log, alphabet):
+#     return  create_DFG(log, alphabet)
+#
+# @tm.measure_time
+# def get_task_id_tm(task, alphabet):
+#     return get_task_id(task, alphabet)
+#
+# @tm.measure_time
+# def create_initial_individual_tm(cromossome, alphabet, reference_cromossome):
+#     return create_initial_individual(cromossome, alphabet, reference_cromossome)
+#
 @tm.measure_time
 def create_tasks_tm(alphabet, reference_cromossome, cromossome):
     return create_tasks(alphabet, reference_cromossome, cromossome)
@@ -200,15 +210,15 @@ def create_tasks_tm(alphabet, reference_cromossome, cromossome):
 @tm.measure_time
 def process_cromossome_to_create_AND_gateways_tm(cromossome):
     return process_cromossome_to_create_AND_gateways(cromossome)
-
-@tm.measure_time
-def create_AND_gateways_tm(cromossome):
-    return create_AND_gateways(cromossome)
-
-@tm.measure_time
-def create_AND_gateways_tm(cromossome):
-    return create_AND_gateways(cromossome)
-
-@tm.measure_time
-def increase_or_decrease_tokens_tm(cromossome, number_of_produced_XOR_tokens, number_of_consumed_XOR_tokens, number_of_produced_AND_tokens, number_of_consumed_AND_tokens):
-    return increase_or_decrease_tokens(cromossome, number_of_produced_XOR_tokens, number_of_consumed_XOR_tokens, number_of_produced_AND_tokens, number_of_consumed_AND_tokens)
+#
+# @tm.measure_time
+# def create_AND_gateways_tm(cromossome):
+#     return create_AND_gateways(cromossome)
+#
+# @tm.measure_time
+# def create_AND_gateways_tm(cromossome):
+#     return create_AND_gateways(cromossome)
+#
+# @tm.measure_time
+# def increase_or_decrease_tokens_tm(cromossome, number_of_produced_XOR_tokens, number_of_consumed_XOR_tokens, number_of_produced_AND_tokens, number_of_consumed_AND_tokens):
+#     return increase_or_decrease_tokens(cromossome, number_of_produced_XOR_tokens, number_of_consumed_XOR_tokens, number_of_produced_AND_tokens, number_of_consumed_AND_tokens)
