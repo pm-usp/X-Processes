@@ -1,6 +1,0 @@
-attributes
-
-P{35pt}P{5pt}P{31pt}P{21pt}
-
-\begin{tabular}{LLLLP{80pt}P{80pt}P{110pt}}
-	

@@ -1,5 +1,7 @@
 import pm4py
+import decorators
 
+@decorators.measure_time
 def calculate_metrics(log, pnml_file, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
     petrinet, initial_marking, final_marking = pm4py.read_pnml(pnml_file)
 

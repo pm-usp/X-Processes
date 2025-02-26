@@ -1,6 +1,7 @@
 import csv
 import platform
 import os
+import decorators
 
 so = platform.system()
 if so == 'Linux':
@@ -8,7 +9,7 @@ if so == 'Linux':
     import time
     import errno
 
-
+@decorators.measure_time
 def write_to_locked_file(file_name, data):
     fileToOpen = open(file_name, 'a')
     while True:
@@ -26,6 +27,7 @@ def write_to_locked_file(file_name, data):
                 time.sleep(0.01)
 
 
+@decorators.measure_time
 def record_evolution(log_name, round, parameters, island_number, highest_values, fitness_evolution, alphabet, best_individual, island_start, island_end, island_duration, current_generation):
     values_of_parameters = ''                                                                                           
     for i in range(len(parameters)):                                                                                    
@@ -53,6 +55,7 @@ def record_evolution(log_name, round, parameters, island_number, highest_values,
     return
 
 
+@decorators.measure_time
 def write_locked_bestone(file_name, data):
     fileToOpen = open(file_name, 'w')
     while True:
@@ -70,6 +73,7 @@ def write_locked_bestone(file_name, data):
                 time.sleep(0.01)
 
 
+@decorators.measure_time
 def record_bestone(island_number, highest_hm, generation, bestone_file, island_duration):
     if not os.path.exists(bestone_file):
         if so == 'Linux':

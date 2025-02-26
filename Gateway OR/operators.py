@@ -2,7 +2,9 @@ import random as ran
 import numpy as np
 from numba import njit
 import hashlib
+import decorators
 
+@decorators.measure_time
 def parent_selection(evaluated_population):
     pop_size = len(evaluated_population[1])
     opponent_1, opponent_2 = ran.sample(range(pop_size), 2)
@@ -20,6 +22,7 @@ def parent_selection(evaluated_population):
         else:
             return opponent_1 if o1_values[3] >= o2_values[3] else opponent_2
 
+@decorators.measure_time
 def crossover_per_process(crossover_probability, max_perc_of_num_tasks_for_crossover, cromossome_1, cromossome_2, reference_cromossome, cache_n_tokens, n_tokens_lock):
     if ran.random() < crossover_probability:
         max_length = len(cromossome_1) - 1
@@ -27,6 +30,7 @@ def crossover_per_process(crossover_probability, max_perc_of_num_tasks_for_cross
         number_of_tasks = ran.randint(1, max_number_of_tasks + 1)
         offspring_1, offspring_2 = np.copy(cromossome_1), np.copy(cromossome_2)
 
+        @decorators.measure_time
         def swap_task(i):
             count = 0
             while True:
@@ -48,6 +52,10 @@ def crossover_per_process(crossover_probability, max_perc_of_num_tasks_for_cross
         for i in range(number_of_tasks):
             swap_task(i)
 
+        @decorators.measure_time
+        def check_active_tasks_wrapper(offspring):
+            return check_active_tasks(offspring)
+
         @njit
         def check_active_tasks(offspring):
             for row in range(len(offspring) - 2):
@@ -66,9 +74,9 @@ def crossover_per_process(crossover_probability, max_perc_of_num_tasks_for_cross
                     offspring[-1][col] = np.random.randint(1, 4)
             return True
 
-        ensure_connections(offspring_1, reference_cromossome)
-        ensure_connections(offspring_2, reference_cromossome)
-        checks = [check_active_tasks(offspring_1), check_active_tasks(offspring_2)]
+        ensure_connections_wrapper(offspring_1, reference_cromossome)
+        ensure_connections_wrapper(offspring_2, reference_cromossome)
+        checks = [check_active_tasks_wrapper(offspring_1), check_active_tasks_wrapper(offspring_2)]
 
         if all(checks):
             adjust_produced_consumed_tokens(offspring_1, cache_n_tokens, n_tokens_lock)
@@ -76,13 +84,19 @@ def crossover_per_process(crossover_probability, max_perc_of_num_tasks_for_cross
             return offspring_2, offspring_1
     return cromossome_1, cromossome_2
 
-def mutation(cromossome, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome, island, on_off_task_mutation_probability, max_perc_of_num_tasks_for_on_off_task_mutation, cache_n_tokens, n_tokens_lock):
+@decorators.measure_time
+def mutation(cromossome, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, reference_cromossome, island, on_off_task_mutation_probability, max_perc_of_num_tasks_for_on_off_task_mutation, cache_n_tokens, n_tokens_lock, act_fix_mode):
     if ran.random() < task_mutation_probability:
         task_mutation(cromossome, max_perc_of_num_tasks_for_task_mutation, reference_cromossome, island, cache_n_tokens, n_tokens_lock)
     if ran.random() < gateway_mutation_probability:
         gateway_mutation(cromossome, max_perc_of_num_tasks_for_gateway_mutation, cache_n_tokens, n_tokens_lock)
     if ran.random() < on_off_task_mutation_probability:
-        on_off_task_mutation(cromossome, reference_cromossome, max_perc_of_num_tasks_for_on_off_task_mutation, cache_n_tokens, n_tokens_lock)
+        if not act_fix_mode:
+            on_off_task_mutation(cromossome, reference_cromossome, max_perc_of_num_tasks_for_on_off_task_mutation, cache_n_tokens, n_tokens_lock, act_fix_mode)
+
+@decorators.measure_time
+def mutate_task_wrapper(cromossome, chosen_task, reference_cromossome, reverse=False):
+    return mutate_task(cromossome, chosen_task, reference_cromossome, reverse=False)
 
 @njit
 def mutate_task(cromossome, chosen_task, reference_cromossome, reverse=False):
@@ -195,35 +209,39 @@ def mutate_task(cromossome, chosen_task, reference_cromossome, reverse=False):
         elif is_there_at_least_two_column_active_tasks(cromossome, chosen_task) and cromossome[-1][chosen_task] == 0:
             cromossome[-1][chosen_task] = np.random.randint(1, 4)
 
+@decorators.measure_time
 def adjust_tasks_and_gateways_for_task_mutation(cromossome, cromossome_len, chosen_task, new_input):
-    if not is_there_at_least_one_column_active_task(cromossome, chosen_task):
+    if not is_there_at_least_one_column_active_task_wrapper(cromossome, chosen_task):
         possible_rows = np.array([i for i in range(cromossome_len - 2) if i != new_input and cromossome[i][-1] != -1 and cromossome[-1][i] != -1])
         another_row = np.random.choice(possible_rows)
         cromossome[another_row][chosen_task] = 1
-        if (not is_there_at_least_two_column_active_tasks(cromossome, another_row) and cromossome[-1][ another_row] != 0):
+        if (not is_there_at_least_two_column_active_tasks_wrapper(cromossome, another_row) and cromossome[-1][ another_row] != 0):
             cromossome[-1][another_row] = 0
-        elif is_there_at_least_two_column_active_tasks(cromossome, another_row) and cromossome[-1][another_row] == 0:
+        elif is_there_at_least_two_column_active_tasks_wrapper(cromossome, another_row) and cromossome[-1][another_row] == 0:
             cromossome[-1][another_row] = np.random.randint(1, 4)
-    if not is_there_at_least_one_row_active_task(cromossome, new_input):
+    if not is_there_at_least_one_row_active_task_wrapper(cromossome, new_input):
         possible_columns = np.array([j for j in range(1, cromossome_len - 1) if j != chosen_task and cromossome[j][-1] != -1 and cromossome[-1][j] != -1])
         another_col = np.random.choice(possible_columns)
         cromossome[new_input][another_col] = 1
-        if not is_there_at_least_two_row_active_tasks(cromossome, another_col) and cromossome[another_col][-1] != 0:
+        if not is_there_at_least_two_row_active_tasks_wrapper(cromossome, another_col) and cromossome[another_col][-1] != 0:
             cromossome[another_col][-1] = 0
-        elif is_there_at_least_two_row_active_tasks(cromossome, another_col) and cromossome[another_col][-1] == 0:
+        elif is_there_at_least_two_row_active_tasks_wrapper(cromossome, another_col) and cromossome[another_col][-1] == 0:
             cromossome[another_col][-1] = np.random.randint(1, 4)
 
+@decorators.measure_time
 def adjust_produced_consumed_tokens(cromossome, cache_n_tokens, n_tokens_lock):
     cromossome, number_of_produced_single_tokens, number_of_consumed_single_tokens, number_of_produced_XOR_tokens, number_of_consumed_XOR_tokens, number_of_produced_AND_tokens, number_of_consumed_AND_tokens, number_of_produced_OR_tokens, number_of_consumed_OR_tokens = count_number_of_tokens(cromossome, cache_n_tokens, n_tokens_lock)
     if (number_of_produced_single_tokens + number_of_produced_XOR_tokens + number_of_produced_AND_tokens + number_of_produced_OR_tokens) > (number_of_consumed_single_tokens + number_of_consumed_XOR_tokens + number_of_consumed_AND_tokens + number_of_consumed_OR_tokens):
-        increase_number_of_consumed_tokens(cromossome, number_of_produced_single_tokens, number_of_produced_XOR_tokens, number_of_produced_AND_tokens, number_of_produced_OR_tokens)
+        increase_number_of_consumed_tokens_wrapper(cromossome, number_of_produced_single_tokens, number_of_produced_XOR_tokens, number_of_produced_AND_tokens, number_of_produced_OR_tokens)
     elif (number_of_produced_single_tokens + number_of_produced_XOR_tokens + number_of_produced_AND_tokens + number_of_produced_OR_tokens) < (number_of_consumed_single_tokens + number_of_consumed_XOR_tokens + number_of_consumed_AND_tokens + number_of_consumed_OR_tokens):
-        increase_number_of_produced_tokens(cromossome, number_of_consumed_single_tokens, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens, number_of_consumed_OR_tokens)
+        increase_number_of_produced_tokens_wrapper(cromossome, number_of_consumed_single_tokens, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens, number_of_consumed_OR_tokens)
 
+@decorators.measure_time
 def hash_cromossomo_n_tokens(cromossomo):
     cromossomo_str = str(cromossomo.tolist())
     return hashlib.sha256(cromossomo_str.encode()).hexdigest()
 
+@decorators.measure_time
 def count_number_of_tokens(cromossome, cache_n_tokens, n_tokens_lock):
     # with n_tokens_lock:
     cromossomo_hash = hash_cromossomo_n_tokens(cromossome)
@@ -231,20 +249,21 @@ def count_number_of_tokens(cromossome, cache_n_tokens, n_tokens_lock):
     if isinstance(cached_value, tuple) and len(cached_value) == 8:
         if all(isinstance(count, int) for count in cached_value):
             return (cromossome,) + cached_value
-    number_of_produced_single_tokens = count_produced_single_tokens(cromossome)
-    number_of_consumed_single_tokens = count_consumed_single_tokens(cromossome)
-    number_of_produced_XOR_tokens = count_produced_XOR_tokens(cromossome)
-    number_of_consumed_XOR_tokens = count_consumed_XOR_tokens(cromossome)
-    number_of_produced_AND_tokens = count_produced_AND_tokens(cromossome)
-    number_of_consumed_AND_tokens = count_consumed_AND_tokens(cromossome)
-    number_of_produced_OR_tokens = count_produced_OR_tokens(cromossome)
-    number_of_consumed_OR_tokens = count_consumed_OR_tokens(cromossome)
+    number_of_produced_single_tokens = count_produced_single_tokens_wrapper(cromossome)
+    number_of_consumed_single_tokens = count_consumed_single_tokens_wrapper(cromossome)
+    number_of_produced_XOR_tokens = count_produced_XOR_tokens_wrapper(cromossome)
+    number_of_consumed_XOR_tokens = count_consumed_XOR_tokens_wrapper(cromossome)
+    number_of_produced_AND_tokens = count_produced_AND_tokens_wrapper(cromossome)
+    number_of_consumed_AND_tokens = count_consumed_AND_tokens_wrapper(cromossome)
+    number_of_produced_OR_tokens = count_produced_OR_tokens_wrapper(cromossome)
+    number_of_consumed_OR_tokens = count_consumed_OR_tokens_wrapper(cromossome)
     result = (number_of_produced_single_tokens, number_of_consumed_single_tokens, number_of_produced_XOR_tokens, number_of_consumed_XOR_tokens, number_of_produced_AND_tokens, number_of_consumed_AND_tokens, number_of_produced_OR_tokens, number_of_consumed_OR_tokens)
     if all(isinstance(count, int) for count in result):
         if cromossomo_hash not in cache_n_tokens:
             cache_n_tokens[cromossomo_hash] = result
     return (cromossome,) + result
 
+@decorators.measure_time
 def task_mutation(cromossome, max_perc_of_num_tasks_for_task_mutation, reference_cromossome, island, cache_n_tokens, n_tokens_lock):
     temp_cromossome = np.copy(cromossome)
     cromossome_len = len(cromossome)
@@ -264,15 +283,15 @@ def task_mutation(cromossome, max_perc_of_num_tasks_for_task_mutation, reference
                     cromossome = temp_cromossome
                     return
             chosen_mutation_type = ran.random()
-            mutate_task(cromossome, chosen_task, reference_cromossome, reverse=(chosen_mutation_type >= 1 / 2))
+            mutate_task_wrapper(cromossome, chosen_task, reference_cromossome, reverse=(chosen_mutation_type >= 1 / 2))
             adjust_produced_consumed_tokens(cromossome, cache_n_tokens, n_tokens_lock)
         for n in range(cromossome_len - 2):
-            if not is_there_at_least_one_row_active_task(cromossome, n):
+            if not is_there_at_least_one_row_active_task_wrapper(cromossome, n):
                 unreachableOrNoProperEndTask = False
                 break
         if unreachableOrNoProperEndTask:
             for n in range(1, cromossome_len - 1):
-                if not is_there_at_least_one_column_active_task(cromossome, n):
+                if not is_there_at_least_one_column_active_task_wrapper(cromossome, n):
                     unreachableOrNoProperEndTask = False
                     break
         if unreachableOrNoProperEndTask:
@@ -282,7 +301,8 @@ def task_mutation(cromossome, max_perc_of_num_tasks_for_task_mutation, reference
         if count1 > len(cromossome):
             return
 
-def on_off_task_mutation(cromossome, reference_cromossome, max_perc_of_num_tasks_for_on_off_task_mutation, cache_n_tokens, n_tokens_lock):
+@decorators.measure_time
+def on_off_task_mutation(cromossome, reference_cromossome, max_perc_of_num_tasks_for_on_off_task_mutation, cache_n_tokens, n_tokens_lock, act_fix_mode):
     tasks_on = np.array([i for i in range(1, len(cromossome) - 2) if cromossome[i][-1] != -1 and cromossome[-1][i] != -1])
     tasks_off = np.array([i for i in range(1, len(cromossome) - 2) if cromossome[i][-1] == -1 and cromossome[-1][i] == -1])
     if ran.random() < 0.5:
@@ -305,13 +325,18 @@ def on_off_task_mutation(cromossome, reference_cromossome, max_perc_of_num_tasks
             cromossome = deactivate_task(cromossome, reference_cromossome, task, cache_n_tokens, n_tokens_lock)
     return cromossome
 
+@decorators.measure_time
 def activate_task(cromossome, reference_cromossome, task_index, cache_n_tokens, n_tokens_lock):
     cromossome[task_index][-1] = 0
     cromossome[-1][task_index] = 0
-    create_connections(cromossome, reference_cromossome, task_index)
-    update_gateway_states(cromossome, task_index)
+    create_connections_wrapper(cromossome, reference_cromossome, task_index)
+    update_gateway_states_wrapper(cromossome)
     adjust_produced_consumed_tokens(cromossome, cache_n_tokens, n_tokens_lock)
     return cromossome
+
+@decorators.measure_time
+def create_connections_wrapper(cromossome, reference_cromossome, task_index):
+    return create_connections(cromossome, reference_cromossome, task_index)
 
 @njit
 def create_connections(cromossome, reference_cromossome, task_index):
@@ -330,15 +355,20 @@ def create_connections(cromossome, reference_cromossome, task_index):
         if i != chosen_input and ran.random() < 0.5:
             cromossome[i][task_index] = 1
 
+@decorators.measure_time
 def deactivate_task(cromossome, reference_cromossome, task_index, cache_n_tokens, n_tokens_lock):
     cromossome[task_index, :] = 0
     cromossome[:, task_index] = 0
     cromossome[task_index][-1] = -1
     cromossome[-1][task_index] = -1
-    ensure_connections(cromossome, reference_cromossome)
-    update_gateway_states(cromossome, task_index)
+    ensure_connections_wrapper(cromossome, reference_cromossome)
+    update_gateway_states_wrapper(cromossome)
     adjust_produced_consumed_tokens(cromossome, cache_n_tokens, n_tokens_lock)
     return cromossome
+
+@decorators.measure_time
+def ensure_connections_wrapper(cromossome, reference_cromossome):
+    return ensure_connections(cromossome, reference_cromossome)
 
 @njit
 def ensure_connections(cromossome, reference_cromossome):
@@ -362,8 +392,12 @@ def ensure_connections(cromossome, reference_cromossome):
                 new_task = np.random.choice(possible_tasks_array)
                 cromossome[new_task][to_task] = 1
 
+@decorators.measure_time
+def update_gateway_states_wrapper(cromossome):
+    return update_gateway_states(cromossome)
+
 @njit
-def update_gateway_states(cromossome, task_index):
+def update_gateway_states(cromossome):
     for row in range(len(cromossome) - 2):
         if not is_there_at_least_two_row_active_tasks(cromossome, row) and is_there_at_least_one_row_active_task(cromossome, row) and cromossome[row][-1] != 0:
             cromossome[row][-1] = 0
@@ -375,6 +409,7 @@ def update_gateway_states(cromossome, task_index):
         elif is_there_at_least_two_column_active_tasks(cromossome, col) and cromossome[-1][col] not in [1,2,3]:
             cromossome[-1][col] = np.random.randint(1, 4)
 
+@decorators.measure_time
 def gateway_mutation(cromossome, max_perc_of_num_tasks_for_gateway_mutation, cache_n_tokens, n_tokens_lock):
     len_cromossome = len(cromossome)
     if max_perc_of_num_tasks_for_gateway_mutation == -1:
@@ -385,9 +420,14 @@ def gateway_mutation(cromossome, max_perc_of_num_tasks_for_gateway_mutation, cac
     for _ in range(number_of_tasks):
         mutate_and_adjust(cromossome, len_cromossome, cache_n_tokens, n_tokens_lock)
 
+@decorators.measure_time
 def mutate_and_adjust(cromossome, len_cromossome, cache_n_tokens, n_tokens_lock):
-    gateway_mutation_core(cromossome, len_cromossome)
+    gateway_mutation_core_wrapper(cromossome, len_cromossome)
     adjust_produced_consumed_tokens(cromossome, cache_n_tokens, n_tokens_lock)
+
+@decorators.measure_time
+def gateway_mutation_core_wrapper(cromossome, len_cromossome):
+    return gateway_mutation_core(cromossome, len_cromossome)
 
 @njit
 def gateway_mutation_core(cromossome, len_cromossome):
@@ -428,6 +468,10 @@ def gateway_mutation_core(cromossome, len_cromossome):
     else:
         cromossome[-1][chosen_task] = new_value
 
+@decorators.measure_time
+def count_produced_single_tokens_wrapper(cromossome):
+    return count_produced_single_tokens(cromossome)
+
 @njit
 def count_produced_single_tokens(cromossome):
     number_of_produced_single_tokens = 0
@@ -435,6 +479,10 @@ def count_produced_single_tokens(cromossome):
         if cromossome[i][-1] == 0:
             number_of_produced_single_tokens += 1
     return number_of_produced_single_tokens
+
+@decorators.measure_time
+def count_consumed_single_tokens_wrapper(cromossome):
+    return count_consumed_single_tokens(cromossome)
 
 @njit
 def count_consumed_single_tokens(cromossome):
@@ -444,6 +492,10 @@ def count_consumed_single_tokens(cromossome):
             number_of_consumed_single_tokens += 1
     return number_of_consumed_single_tokens
 
+@decorators.measure_time
+def count_produced_XOR_tokens_wrapper(cromossome):
+    return count_produced_XOR_tokens(cromossome)
+
 @njit
 def count_produced_XOR_tokens(cromossome):
     number_of_produced_XOR_tokens = 0
@@ -452,6 +504,10 @@ def count_produced_XOR_tokens(cromossome):
             number_of_produced_XOR_tokens += 1
     return number_of_produced_XOR_tokens
 
+@decorators.measure_time
+def count_consumed_XOR_tokens_wrapper(cromossome):
+    return count_consumed_XOR_tokens(cromossome)
+
 @njit
 def count_consumed_XOR_tokens(cromossome):
     number_of_consumed_XOR_tokens = 0
@@ -459,6 +515,10 @@ def count_consumed_XOR_tokens(cromossome):
         if cromossome[-1][i] == 1:
             number_of_consumed_XOR_tokens += 1
     return number_of_consumed_XOR_tokens
+
+@decorators.measure_time
+def count_produced_AND_tokens_wrapper(cromossome):
+    return count_produced_AND_tokens(cromossome)
 
 @njit
 def count_produced_AND_tokens(cromossome):
@@ -469,6 +529,10 @@ def count_produced_AND_tokens(cromossome):
                 number_of_produced_AND_tokens += cromossome[i][j]
     return number_of_produced_AND_tokens
 
+@decorators.measure_time
+def count_consumed_AND_tokens_wrapper(cromossome):
+    return count_consumed_AND_tokens(cromossome)
+
 @njit
 def count_consumed_AND_tokens(cromossome):
     number_of_consumed_AND_tokens = 0
@@ -477,6 +541,10 @@ def count_consumed_AND_tokens(cromossome):
             for j in range(len(cromossome[i]) - 2):
                 number_of_consumed_AND_tokens += + cromossome[j][i]
     return number_of_consumed_AND_tokens
+
+@decorators.measure_time
+def count_produced_OR_tokens_wrapper(cromossome):
+    return count_produced_OR_tokens(cromossome)
 
 @njit
 def count_produced_OR_tokens(cromossome):
@@ -487,6 +555,10 @@ def count_produced_OR_tokens(cromossome):
                 number_of_produced_OR_tokens += cromossome[i][j]
     return number_of_produced_OR_tokens
 
+@decorators.measure_time
+def count_consumed_OR_tokens_wrapper(cromossome):
+    return count_consumed_OR_tokens(cromossome)
+
 @njit
 def count_consumed_OR_tokens(cromossome):
     number_of_consumed_OR_tokens = 0
@@ -495,6 +567,10 @@ def count_consumed_OR_tokens(cromossome):
             for j in range(len(cromossome[i]) - 2):
                 number_of_consumed_OR_tokens += + cromossome[j][i]
     return number_of_consumed_OR_tokens
+
+@decorators.measure_time
+def increase_number_of_produced_tokens_wrapper(cromossome, number_of_consumed_single_tokens, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens, number_of_consumed_OR_tokens):
+    return increase_number_of_produced_tokens(cromossome, number_of_consumed_single_tokens, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens, number_of_consumed_OR_tokens)
 
 @njit
 def increase_number_of_produced_tokens(cromossome, number_of_consumed_single_tokens, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens, number_of_consumed_OR_tokens):
@@ -540,6 +616,10 @@ def increase_number_of_produced_tokens(cromossome, number_of_consumed_single_tok
     if i == number_of_attempts - 1:
         decrease_number_of_consumed_tokens(cromossome, count_produced_single_tokens(cromossome), count_produced_XOR_tokens(cromossome), count_produced_AND_tokens(cromossome), count_produced_OR_tokens(cromossome))
 
+@decorators.measure_time
+def increase_number_of_consumed_tokens_wrapper(cromossome, number_of_produced_single_tokens, number_of_produced_XOR_tokens, number_of_produced_AND_tokens, number_of_produced_OR_tokens):
+    return increase_number_of_consumed_tokens(cromossome, number_of_produced_single_tokens, number_of_produced_XOR_tokens, number_of_produced_AND_tokens, number_of_produced_OR_tokens)
+
 @njit
 def increase_number_of_consumed_tokens(cromossome, number_of_produced_single_tokens, number_of_produced_XOR_tokens, number_of_produced_AND_tokens, number_of_produced_OR_tokens):
     n = len(cromossome)
@@ -584,6 +664,10 @@ def increase_number_of_consumed_tokens(cromossome, number_of_produced_single_tok
     if i == number_of_attempts - 1:
         decrease_number_of_produced_tokens(cromossome, count_consumed_single_tokens(cromossome), count_consumed_XOR_tokens(cromossome), count_consumed_AND_tokens(cromossome), count_consumed_OR_tokens(cromossome))
 
+@decorators.measure_time
+def decrease_number_of_produced_tokens_wrapper(cromossome, number_of_consumed_single_tokens, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens, number_of_consumed_OR_tokens):
+    return decrease_number_of_produced_tokens(cromossome, number_of_consumed_single_tokens, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens, number_of_consumed_OR_tokens)
+
 @njit
 def decrease_number_of_produced_tokens(cromossome, number_of_consumed_single_tokens, number_of_consumed_XOR_tokens, number_of_consumed_AND_tokens, number_of_consumed_OR_tokens):
     n = len(cromossome)
@@ -617,6 +701,10 @@ def decrease_number_of_produced_tokens(cromossome, number_of_consumed_single_tok
                 number_of_produced_OR_tokens = count_produced_OR_tokens(cromossome)
         if (number_of_produced_single_tokens + number_of_produced_XOR_tokens + number_of_produced_AND_tokens + number_of_produced_OR_tokens) != (number_of_consumed_single_tokens + number_of_consumed_XOR_tokens + number_of_consumed_AND_tokens + number_of_consumed_OR_tokens):
             cromossome[:, -1] = copy_of_output_gateways
+
+@decorators.measure_time
+def decrease_number_of_consumed_tokens_wrapper(cromossome, number_of_produced_single_tokens, number_of_produced_XOR_tokens, number_of_produced_AND_tokens, number_of_produced_OR_tokens):
+    return decrease_number_of_consumed_tokens(cromossome, number_of_produced_single_tokens, number_of_produced_XOR_tokens, number_of_produced_AND_tokens, number_of_produced_OR_tokens)
 
 @njit
 def decrease_number_of_consumed_tokens(cromossome, number_of_produced_single_tokens, number_of_produced_XOR_tokens, number_of_produced_AND_tokens, number_of_produced_OR_tokens):
@@ -652,6 +740,10 @@ def decrease_number_of_consumed_tokens(cromossome, number_of_produced_single_tok
         if (number_of_produced_single_tokens + number_of_produced_XOR_tokens + number_of_produced_AND_tokens + number_of_produced_OR_tokens) != (number_of_consumed_single_tokens + number_of_consumed_XOR_tokens + number_of_consumed_AND_tokens + number_of_consumed_OR_tokens):
             cromossome[-1] = copy_of_input_gateways.copy()
 
+@decorators.measure_time
+def is_there_at_least_one_row_active_task_wrapper(cromossome, chosen_task):
+    return is_there_at_least_one_row_active_task(cromossome, chosen_task)
+
 @njit
 def is_there_at_least_one_row_active_task(cromossome, chosen_task):
     row = cromossome[chosen_task]
@@ -660,12 +752,20 @@ def is_there_at_least_one_row_active_task(cromossome, chosen_task):
             return True
     return False
 
+@decorators.measure_time
+def is_there_at_least_one_column_active_task_wrapper(cromossome, chosen_task):
+    return is_there_at_least_one_column_active_task(cromossome, chosen_task)
+
 @njit
 def is_there_at_least_one_column_active_task(cromossome, chosen_task):
     for j in range(len(cromossome) - 2):
         if cromossome[j][chosen_task] == 1:
             return True
     return False
+
+@decorators.measure_time
+def is_there_at_least_two_row_active_tasks_wrapper(cromossome, chosen_task):
+    return is_there_at_least_two_row_active_tasks(cromossome, chosen_task)
 
 @njit
 def is_there_at_least_two_row_active_tasks(cromossome, chosen_task):
@@ -678,6 +778,10 @@ def is_there_at_least_two_row_active_tasks(cromossome, chosen_task):
                 return True
     return False
 
+@decorators.measure_time
+def is_there_at_least_two_column_active_tasks_wrapper(cromossome, chosen_task):
+    return is_there_at_least_two_column_active_tasks(cromossome, chosen_task)
+
 @njit
 def is_there_at_least_two_column_active_tasks(cromossome, chosen_task):
     count = 0
@@ -688,6 +792,7 @@ def is_there_at_least_two_column_active_tasks(cromossome, chosen_task):
                 return True
     return False
 
+@decorators.measure_time
 def elitism(population, elitism_percentage, sorted_evaluated_aux_population, sorted_evaluated_population, auxiliary_population, evaluated_aux_population, evaluated_population):
     elitism_count = round(len(population) * elitism_percentage)
     aux_pop_len = len(sorted_evaluated_aux_population)
@@ -708,6 +813,7 @@ def elitism(population, elitism_percentage, sorted_evaluated_aux_population, sor
             break
     evaluated_aux_population[0] = total_evaluation_aux_population
 
+@decorators.measure_time
 def count_active_inactive_tasks(cromossome):
     active_count = 0
     inactive_count = 0
@@ -718,25 +824,26 @@ def count_active_inactive_tasks(cromossome):
             inactive_count += 1
     return active_count, inactive_count
 
+@decorators.measure_time
 def check_condition(cromossome, source):
     for row in range(len(cromossome) - 2):
-        if not is_there_at_least_one_row_active_task(cromossome, row) and cromossome[row][-1] != -1:
+        if not is_there_at_least_one_row_active_task_wrapper(cromossome, row) and cromossome[row][-1] != -1:
             print(1, cromossome, source)
             return False
-        if not is_there_at_least_two_row_active_tasks(cromossome, row) and cromossome[row][-1] in [1,2,3]:
+        if not is_there_at_least_two_row_active_tasks_wrapper(cromossome, row) and cromossome[row][-1] in [1,2,3]:
             print(2, cromossome, source)
             return False
-        if is_there_at_least_two_row_active_tasks(cromossome, row) and cromossome[row][-1] == 0:
+        if is_there_at_least_two_row_active_tasks_wrapper(cromossome, row) and cromossome[row][-1] == 0:
             print(3, cromossome, source)
             return False
     for col in range(1, len(cromossome) - 1):
-        if not is_there_at_least_one_column_active_task(cromossome, col) and cromossome[-1][col] != -1:
+        if not is_there_at_least_one_column_active_task_wrapper(cromossome, col) and cromossome[-1][col] != -1:
             print(4, cromossome, source)
             return False
-        if not is_there_at_least_two_column_active_tasks(cromossome, col) and cromossome[-1][col] in [1,2,3]:
+        if not is_there_at_least_two_column_active_tasks_wrapper(cromossome, col) and cromossome[-1][col] in [1,2,3]:
             print(5, cromossome, source)
             return False
-        if is_there_at_least_two_column_active_tasks(cromossome, col) and cromossome[-1][col] == 0:
+        if is_there_at_least_two_column_active_tasks_wrapper(cromossome, col) and cromossome[-1][col] == 0:
             print(6, cromossome, source)
             return False
     return True

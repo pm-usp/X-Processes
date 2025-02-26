@@ -14,11 +14,12 @@ import argparse
 import os
 import operators as op
 import sys
+import decorators
 sys.setrecursionlimit(1500)
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                  description= 'X-Processes is an automatic process model discovery method based on genetic algorithms',
-                                 epilog='Example of use: python xprocesses.py -log input-logs/test.xes.gz -isl 4 -rnd 5 -gen 500 -tme 3600 -con 25 -fit 1 -prc 1 -gnl 1 -smp 1')
+                                 epilog='Example of use: python xprocesses.py -log input-logs/test.xes.gz -isl 4 -rnd 5 -gen 500 -tme 3600 -con 25 -fit 1 -prc 1 -gnl 1 -smp 1 -fix 0')
 
 parser.add_argument('-log', required=True, type=str, help='log (default: None) | (type: .xes.gz)')
 parser.add_argument('-isl', type=int, default=1, help='number of islands (default: 1) | (type: int)')
@@ -30,6 +31,7 @@ parser.add_argument('-fit', type=int, default=1, help='fitness weight (default: 
 parser.add_argument('-prc', type=int, default=1, help='precision weight (default: 1) | (type: int)')
 parser.add_argument('-gnl', type=int, default=1, help='generalization weight (default: 1) | (type: int)')
 parser.add_argument('-smp', type=int, default=1, help='simplicity weight (default: 1) | (type: int)')
+parser.add_argument('-fix', type=int, default=1, help='activity selection mode: 1 for fixed number of activities as in the event log, 0 for dynamic subset optimization during fitness evolution (default: 1) | (type: int)')
 
 args = parser.parse_args()
 
@@ -43,7 +45,9 @@ fitness_weight = args.fit
 precision_weight = args.prc
 generalization_weight = args.gnl
 simplicity_weight = args.smp
+act_fix_mode = args.fix
 
+@decorators.measure_time
 def calculate_statistics(evaluated_population):
     highest_value_and_position, sorted_evaluated_population = cyc.choose_highest(evaluated_population)
     lowest_value = cyc.choose_lowest(sorted_evaluated_population)
@@ -69,7 +73,7 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
     max_perc_of_num_tasks_for_on_off_task_mutation = float(island_params[12])
     island_sizes[island_number] = population_size
     percentage_of_best_individuals_for_migration_all_islands[island_number] = percentage_of_best_individuals_for_migration_per_island
-    (population, evaluated_population, reference_cromossome) = inp.initialize_population(population_size, alphabet, full_log, xes_log, fitness_weight, precision_weight, generalization_weight, simplicity_weight, log_name, round, island_number, 0, number_of_islands, cache_fitness, cache_soundness, cache_petri_net, cache_n_tokens, fitness_lock, soundness_lock, petri_net_lock, n_tokens_lock)
+    (population, evaluated_population, reference_cromossome) = inp.initialize_population(population_size, alphabet, full_log, xes_log, fitness_weight, precision_weight, generalization_weight, simplicity_weight, log_name, round, island_number, 0, cache_fitness, cache_soundness, cache_petri_net, cache_n_tokens, fitness_lock, soundness_lock, petri_net_lock, n_tokens_lock, act_fix_mode)
     fitness_evolution = []
     highest_value_and_position, lowest_value, average_value, sorted_evaluated_population = calculate_statistics(evaluated_population)
     fitness_evolution.append([lowest_value, highest_value_and_position[0][0], average_value, 0, highest_value_and_position[0][1], highest_value_and_position[0][2], highest_value_and_position[0][3], highest_value_and_position[0][4], 0, 0, 0, 0])
@@ -87,7 +91,7 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
         highest_value_and_position, sorted_evaluated_population = cyc.choose_highest(evaluated_population)
     rec.record_evolution(log_name, str(round), paramenter_set[island_number + 1], island_number, highest_value_and_position[0], fitness_evolution, alphabet, population[int(highest_value_and_position[1])], island_start, island_end, island_duration, 0)
     for current_generation in range(1, max_number_of_generations):
-        (population, evaluated_population) = cyc.generation(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, xes_log, fitness_weight, precision_weight, generalization_weight, simplicity_weight, log_name, round, island_number, current_generation, on_off_task_mutation_probability, max_perc_of_num_tasks_for_on_off_task_mutation, cache_fitness, cache_soundness, cache_petri_net, cache_n_tokens, fitness_lock, soundness_lock, petri_net_lock, n_tokens_lock)
+        (population, evaluated_population) = cyc.generation(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, xes_log, fitness_weight, precision_weight, generalization_weight, simplicity_weight, log_name, round, island_number, current_generation, on_off_task_mutation_probability, max_perc_of_num_tasks_for_on_off_task_mutation, cache_fitness, cache_soundness, cache_petri_net, cache_n_tokens, fitness_lock, soundness_lock, petri_net_lock, n_tokens_lock, act_fix_mode)
         highest_value_and_position, lowest_value, average_value, sorted_evaluated_population = calculate_statistics(evaluated_population)
         fitness_evolution.append([lowest_value, highest_value_and_position[0][0], average_value, 0, highest_value_and_position[0][1], highest_value_and_position[0][2], highest_value_and_position[0][3], highest_value_and_position[0][4], 0, 0, 0, 0])
         fitness_evolution[current_generation][8] = (fitness_evolution[current_generation - 1][8] + 1 if fitness_evolution[current_generation][1] == fitness_evolution[current_generation - 1][1] else -1 if fitness_evolution[current_generation][1] < fitness_evolution[current_generation - 1][1] else fitness_evolution[current_generation][8])
