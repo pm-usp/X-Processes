@@ -6,7 +6,7 @@ from pm4py.objects.conversion.log import converter as log_converter
 
 folder = 'input-logs'
 
-xes_data_file = ['test-AND.xes.gz']
+xes_data_file = ['test.xes.gz']
 
 def is_NaN(num):                                                                                                        #?
     return num != num                                                                                                   #?
