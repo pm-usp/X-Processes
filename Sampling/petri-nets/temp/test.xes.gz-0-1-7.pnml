@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<pnml>
+  <net id="" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+    <name>
+      <text></text>
+    </name>
+    <page id="n0">
+      <place id="ent_Gateway_join_1">
+        <name>
+          <text>ent_Gateway_join_1</text>
+        </name>
+      </place>
+      <place id="ent_Gateway_join_3">
+        <name>
+          <text>ent_Gateway_join_3</text>
+        </name>
+      </place>
+      <place id="exi_Gateway_split_0">
+        <name>
+          <text>exi_Gateway_split_0</text>
+        </name>
+      </place>
+      <place id="exi_Gateway_split_1">
+        <name>
+          <text>exi_Gateway_split_1</text>
+        </name>
+      </place>
+      <place id="sink">
+        <name>
+          <text>sink</text>
+        </name>
+      </place>
+      <place id="source">
+        <name>
+          <text>source</text>
+        </name>
+        <initialMarking>
+          <text>1</text>
+        </initialMarking>
+      </place>
+      <transition id="sfl_Flow_0_3">
+        <name>
+          <text>sfl_Flow_0_3</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="08ab9c7b-d754-4047-a904-750c85a269fb"/>
+      </transition>
+      <transition id="Activity_1">
+        <name>
+          <text>Accepted</text>
+        </name>
+      </transition>
+      <transition id="sfl_Flow_1_3">
+        <name>
+          <text>sfl_Flow_1_3</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="a9f6f68e-42b8-4862-a925-c59d5c8b24cc"/>
+      </transition>
+      <transition id="sfl_Flow_1_1">
+        <name>
+          <text>sfl_Flow_1_1</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="6b0f147c-66bb-4d80-800c-c405d7350143"/>
+      </transition>
+      <transition id="87ef2686-9f48-41f2-aacf-637048069aee">
+        <name>
+          <text>87ef2686-9f48-41f2-aacf-637048069aee</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="99e4643e-eb21-4493-b9b4-0f1d17212818"/>
+      </transition>
+      <transition id="Activity_4">
+        <name>
+          <text>Unmatched</text>
+        </name>
+      </transition>
+      <transition id="Activity_2">
+        <name>
+          <text>Completed</text>
+        </name>
+      </transition>
+      <transition id="Activity_3">
+        <name>
+          <text>Queued</text>
+        </name>
+      </transition>
+      <arc id="1372612331232" source="87ef2686-9f48-41f2-aacf-637048069aee" target="exi_Gateway_split_0"/>
+      <arc id="1372612333920" source="sfl_Flow_0_3" target="ent_Gateway_join_3"/>
+      <arc id="1372612334016" source="exi_Gateway_split_1" target="Activity_2"/>
+      <arc id="1372612340928" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
+      <arc id="1372612335264" source="exi_Gateway_split_0" target="sfl_Flow_0_3"/>
+      <arc id="1372612335744" source="ent_Gateway_join_3" target="Activity_3"/>
+      <arc id="1372612339968" source="ent_Gateway_join_1" target="Activity_1"/>
+      <arc id="1372612339872" source="Activity_1" target="exi_Gateway_split_1"/>
+      <arc id="1372612340496" source="exi_Gateway_split_0" target="Activity_4"/>
+      <arc id="1372612336080" source="Activity_3" target="ent_Gateway_join_1"/>
+      <arc id="1372612333680" source="sfl_Flow_1_3" target="ent_Gateway_join_3"/>
+      <arc id="1372612342224" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
+      <arc id="1372612334448" source="source" target="87ef2686-9f48-41f2-aacf-637048069aee"/>
+      <arc id="1372612333968" source="Activity_2" target="sink"/>
+      <arc id="1372612335024" source="exi_Gateway_split_1" target="sfl_Flow_1_3"/>
+      <arc id="1372612337712" source="Activity_4" target="ent_Gateway_join_1"/>
+    </page>
+    <finalmarkings>
+      <marking>
+        <place idref="sink">
+          <text>1</text>
+        </place>
+      </marking>
+    </finalmarkings>
+  </net>
+</pnml>

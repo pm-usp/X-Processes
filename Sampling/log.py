@@ -5,6 +5,10 @@ import concurrent.futures
 import decorators
 import os
 import time
+import tempfile
+import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
+import gzip
 
 @decorators.measure_time
 def remove_consecutive_repetitions(trace):
@@ -17,9 +21,48 @@ def remove_consecutive_repetitions(trace):
             result.append(trace[i])
     return result
 
+def is_gzip_file(filename):
+    with open(filename, 'rb') as f:
+        return f.read(2) == b'\x1f\x8b'
+
+def has_timestamp_in_xes(xes_file):
+    open_fn = gzip.open if is_gzip_file(xes_file) else open
+    with open_fn(xes_file, 'rt', encoding="utf-8-sig") as f:
+        for line in f:
+            if 'key="time:timestamp"' in line:
+                return True
+    return False
+
+def add_fictitious_timestamps_file(input_xes, output_xes, start_time="2024-01-01T00:00:00.000+00:00", increment_seconds=1):
+    tree = ET.parse(input_xes)
+    root = tree.getroot()
+    current_time = datetime.fromisoformat(start_time.replace("Z", "+00:00"))
+    for trace in root.findall("trace"):
+        for event in trace.findall("event"):
+            if not any(attr.get("key") == "time:timestamp" for attr in event):
+                timestamp_elem = ET.Element("date")
+                timestamp_elem.set("key", "time:timestamp")
+                timestamp_elem.set("value", current_time.isoformat())
+                event.append(timestamp_elem)
+                current_time += timedelta(seconds=increment_seconds)
+
+    tree.write(output_xes, encoding="UTF-8", xml_declaration=True)
+    print(f"Timestamps fictícios adicionados no arquivo temporário: {output_xes}")
+
 @decorators.measure_time
 def import_log(input_xes_log):
-    xes_log = pm4py.read_xes(input_xes_log)
+    if not has_timestamp_in_xes(input_xes_log):
+        print("Nenhum timestamp encontrado no XES. Gerando timestamps fictícios...")
+        # Cria arquivo temporário com timestamps
+        temp_fd, temp_xes_path = tempfile.mkstemp(suffix=".xes")
+        os.close(temp_fd)  # Fecha o descritor de arquivo
+        add_fictitious_timestamps_file(input_xes_log, temp_xes_path)
+        xes_log_path = temp_xes_path
+    else:
+        xes_log_path = input_xes_log
+
+    # Carrega o log (original ou temporário)
+    xes_log = pm4py.read_xes(xes_log_path)
     input_log_name = re.search(r"[^//]*$", input_xes_log).group(0)
     data1 = pm4py.convert_to_dataframe(xes_log)
     data2 = data1.groupby('case:concept:name')['concept:name'].agg(list)
@@ -31,9 +74,12 @@ def import_log(input_xes_log):
     return listOfLists_log, xes_log, input_log_name
 
 @decorators.measure_time
-def sample_log(perc, input_log_name, sampled_log_lock, remaining_log_lock, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log):
-    sampled_xes_log_file_path = 'input-logs/log-sampling/sampled-' + str(input_log_name.replace("\\", "-").replace("/", "-")).replace("input-logs-", "").replace(".xes", "").replace(".gz", "") + '.xes'
-    remaining_xes_log_file_path = 'input-logs/log-sampling/remaining-' + str(input_log_name.replace("\\", "-").replace("/", "-")).replace("input-logs-", "").replace(".xes", "").replace(".gz", "") + '.xes'
+def sample_log(perc, input_log_name, sampled_log_lock, remaining_log_lock, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp):
+    # sampled_xes_log_file_path = 'input-logs/log-sampling/sampled-' + str(input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-")).replace("input-logs-", "").replace(".xes", "").replace(".gz", "") + '.xes'
+    # remaining_xes_log_file_path = 'input-logs/log-sampling/remaining-' + str(input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-")).replace("input-logs-", "").replace(".xes", "").replace(".gz", "") + '.xes'
+    basename = input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-").replace("input-logs-", "").replace(".xes", "").replace(".gz", "")
+    sampled_xes_log_file_path = f'input-logs/log-sampling/sampled-{basename}-{filetimestamp}.xes'
+    remaining_xes_log_file_path = f'input-logs/log-sampling/remaining-{basename}-{filetimestamp}.xes'
     if os.path.exists(sampled_xes_log_file_path):
         cached_sampled_xes_log, last_file_size_sampled_xes_log = read_log_safely('sampled', sampled_xes_log_file_path, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log)
         current_sampled_xes_log = cached_sampled_xes_log
@@ -84,9 +130,12 @@ def transform_from_sampled_xes_log(sampled_xes_log):
     return sampled_listOfLists_log
 
 @decorators.measure_time
-def calculate_numbers_of_sampled_and_remaining_cases(input_log_name, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log):
-    sampled_xes_log_file_path = 'input-logs/log-sampling/sampled-' + str(input_log_name.replace("\\", "-").replace("/", "-")).replace("input-logs-", "").replace(".xes", "").replace(".gz", "") + '.xes'
-    remaining_xes_log_file_path = 'input-logs/log-sampling/remaining-' + str(input_log_name.replace("\\", "-").replace("/", "-")).replace("input-logs-", "").replace(".xes", "").replace(".gz", "") + '.xes'
+def calculate_numbers_of_sampled_and_remaining_cases(input_log_name, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp):
+    # sampled_xes_log_file_path = 'input-logs/log-sampling/sampled-' + str(input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-")).replace("input-logs-", "").replace(".xes", "").replace(".gz", "") + '.xes'
+    # remaining_xes_log_file_path = 'input-logs/log-sampling/remaining-' + str(input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-")).replace("input-logs-", "").replace(".xes", "").replace(".gz", "") + '.xes'
+    basename = input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-").replace("input-logs-", "").replace(".xes", "").replace(".gz", "")
+    sampled_xes_log_file_path = f'input-logs/log-sampling/sampled-{basename}-{filetimestamp}.xes'
+    remaining_xes_log_file_path = f'input-logs/log-sampling/remaining-{basename}-{filetimestamp}.xes'
     cached_sampled_xes_log, last_file_size_sampled_xes_log = read_log_safely('sampled', sampled_xes_log_file_path, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log)
     current_sampled_xes_log = cached_sampled_xes_log
     cached_remaining_xes_log, last_file_size_remaining_xes_log = read_log_safely('remaining', remaining_xes_log_file_path, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log)

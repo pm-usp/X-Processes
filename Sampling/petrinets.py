@@ -5,6 +5,8 @@ import datetime as dt
 import os
 import hashlib
 import decorators
+import cloudpickle
+import fitness as ft
 
 @decorators.measure_time
 def get_gateway_type(value):
@@ -14,6 +16,23 @@ def get_gateway_type(value):
         return "bpmn:parallelGateway"
     elif value == 1:
         return "bpmn:exclusiveGateway"
+
+
+import xml.etree.ElementTree as ET
+import numpy as np
+
+
+def get_gateway_type(value):
+    """
+    Exemplo simples. Altere conforme sua lógica real.
+    value > 0 -> 'bpmn:exclusiveGateway' ou 'bpmn:parallelGateway', etc.
+    """
+    # Vamos supor que value == 1 => exclusiveGateway, value >= 2 => parallelGateway
+    if value == 1:
+        return "bpmn:exclusiveGateway"
+    else:
+        return "bpmn:parallelGateway"
+
 
 def generate_bpmn_from_cromossome(cromossome, alphabet):
     bpmn = ET.Element(
@@ -271,89 +290,24 @@ def generate_bpmn_from_cromossome(cromossome, alphabet):
     # --------------------------------------------------------
     return ET.tostring(bpmn, encoding="utf-8").decode("utf-8")
 
-
-# @decorators.measure_time
-# def generate_bpmn_from_cromossome(cromossome, alphabet):
-#     bpmn = ET.Element("bpmn:definitions", {"xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance", "xmlns:bpmn": "http://www.omg.org/spec/BPMN/20100524/MODEL", "xmlns:bpmndi": "http://www.omg.org/spec/BPMN/20100524/DI", "xmlns:dc": "http://www.omg.org/spec/DD/20100524/DC", "xmlns:di": "http://www.omg.org/spec/DD/20100524/DI", "id": "Definitions_001", "targetNamespace": "http://bpmn.io/schema/bpmn"})
-#     process = ET.SubElement(bpmn, "bpmn:process", {"id": "Process_001", "isExecutable": "false"})
-#     ET.SubElement(process, "bpmn:startEvent", {"id": "StartEvent_1"})
-#     ET.SubElement(process, "bpmn:endEvent", {"id": "EndEvent_1"})
-#     activities = []
-#     gateways = {}
-#     for idx, activity in enumerate(alphabet):
-#         if cromossome[idx, -1] == -1 and cromossome[-1, idx] == -1:
-#             continue
-#         task = ET.SubElement(process, "bpmn:task", {"id": f"Activity_{idx}", "name": activity})
-#         activities.append(task)
-#     for idx, value in enumerate(cromossome[:, -1]):
-#         if value > 0:
-#             gateway_type = get_gateway_type(value)
-#             gateway = ET.SubElement(process, gateway_type, {"id": f"Gateway_split_{idx}"})
-#             gateways[f"split_{idx}"] = gateway
-#     for idx, value in enumerate(cromossome[-1, :-1]):
-#         if value > 0:
-#             gateway_type = get_gateway_type(value)
-#             gateway = ET.SubElement(process, gateway_type, {"id": f"Gateway_join_{idx}"})
-#             gateways[f"join_{idx}"] = gateway
-#     for idx, row in enumerate(cromossome[:-1]):
-#         if np.sum(row[:-1]) > 1 and row[-1] == 0:
-#             gateway = ET.SubElement(process, "bpmn:exclusiveGateway", {"id": f"Gateway_split_XOR_{idx}"})
-#             gateways[f"split_XOR_{idx}"] = gateway
-#     for idx in range(cromossome.shape[1] - 1):
-#         column = cromossome[:-1, idx]
-#         if np.sum(column) > 1 and cromossome[-1, idx] == 0:
-#             gateway = ET.SubElement(process, "bpmn:exclusiveGateway", {"id": f"Gateway_join_XOR_{idx}"})
-#             gateways[f"join_XOR_{idx}"] = gateway
-#     for idx, row in enumerate(cromossome):
-#         source_id = f"Activity_{idx}"
-#         if f"split_{idx}" in gateways:
-#             source_id = gateways[f"split_{idx}"].attrib['id']
-#             ET.SubElement(process, "bpmn:sequenceFlow", {"id": f"Flow_{idx}_split", "sourceRef": f"Activity_{idx}", "targetRef": source_id})
-#         if f"split_XOR_{idx}" in gateways:
-#             source_id = gateways[f"split_XOR_{idx}"].attrib['id']
-#             ET.SubElement(process, "bpmn:sequenceFlow", {"id": f"Flow_{idx}_split_XOR", "sourceRef": f"Activity_{idx}", "targetRef": source_id})
-#         for target_idx, value in enumerate(row):
-#             if value == 1:
-#                 target_id = f"Activity_{target_idx}"
-#                 if f"join_{target_idx}" in gateways:
-#                     target_id = gateways[f"join_{target_idx}"].attrib['id']
-#                 ET.SubElement(process, "bpmn:sequenceFlow", {"id": f"Flow_{idx}_{target_idx}", "sourceRef": source_id, "targetRef": target_id})
-#                 if f"join_{target_idx}" in gateways:
-#                     ET.SubElement(process, "bpmn:sequenceFlow", {"id": f"Flow_join_{target_idx}", "sourceRef": gateways[f"join_{target_idx}"].attrib['id'], "targetRef": f"Activity_{target_idx}"})
-#                 if f"join_XOR_{target_idx}" in gateways:
-#                     target_id = gateways[f"join_XOR_{target_idx}"].attrib['id']
-#                     ET.SubElement(process, "bpmn:sequenceFlow", {"id": f"Flow_{idx}_join_XOR", "sourceRef": source_id, "targetRef": target_id})
-#                     ET.SubElement(process, "bpmn:sequenceFlow", {"id": f"Flow_join_XOR_{target_idx}", "sourceRef": target_id, "targetRef": f"Activity_{target_idx}"})
-#     begin_activity_id = "Activity_0"
-#     for flow in process:
-#         if flow.tag.endswith("sequenceFlow") and flow.attrib.get("sourceRef") == begin_activity_id:
-#             ET.SubElement(process, "bpmn:sequenceFlow", {"id": f"Flow_Start_{flow.attrib['targetRef']}", "sourceRef": "StartEvent_1", "targetRef": flow.attrib["targetRef"]})
-#             process.remove(flow)
-#     end_activity_id = f"Activity_{len(alphabet) - 1}"
-#     for flow in process:
-#         if flow.tag.endswith("sequenceFlow") and flow.attrib.get("targetRef") == end_activity_id:
-#             ET.SubElement(process, "bpmn:sequenceFlow", {"id": f"Flow_{flow.attrib['sourceRef']}_End", "sourceRef": flow.attrib["sourceRef"], "targetRef": "EndEvent_1"})
-#             process.remove(flow)
-#     for activity in process:
-#         if activity.tag.endswith("task") and activity.attrib.get("id") == "Activity_0":
-#             process.remove(activity)
-#     end_activity_id = f"Activity_{len(alphabet) - 1}"
-#     for activity in process:
-#         if activity.tag.endswith("task") and activity.attrib.get("id") == end_activity_id:
-#             process.remove(activity)
-#     return ET.tostring(bpmn, encoding="utf-8").decode("utf-8")
-
 @decorators.measure_time
 def create_pn(cromossome, alphabet, island, generation, input_log_name, round, cache_petri_net):
     petrinet, initial_marking, final_marking = create_petri_net(cromossome, alphabet, input_log_name, round, island, generation, cache_petri_net)
-    input_log_name = input_log_name.replace("\\", "-").replace("/", "-")
+    input_log_name = input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-")
     pm4py.write_pnml(petrinet, initial_marking, final_marking, 'petri-nets/temp/' + str(input_log_name) + '-' + str(round) + '-' + str(island) + '-' + str(generation))
     return
 
 @decorators.measure_time
-def write_and_show_best_pn(best_island_number, input_log_name, round, generation_best, bestone_file):
+def write_and_show_best_pn(best_island_number, input_log_name, round, generation_best, bestone_file, xes_log, fitness_weight, precision_weight, generalization_weight, simplicity_weight):
     petrinet_name = 'petri-nets/temp/' + str(input_log_name.replace("\\", "-").replace("/", "-")) + '-' + str(round) + '-' + str(best_island_number) + '-' + str(generation_best) + '.pnml'
     petrinet, initial_marking, final_marking = pm4py.read_pnml(petrinet_name)
+    fitness = pm4py.fitness_alignments(xes_log, petrinet, initial_marking, final_marking)
+    precision = pm4py.precision_alignments(xes_log, petrinet, initial_marking, final_marking)
+    generaliz = pm4py.generalization_tbr(xes_log, petrinet, initial_marking, final_marking)
+    #simplic = ft.structuredness(petrinet, initial_marking, final_marking)
+    simplic = pm4py.simplicity_petri_net(petrinet, initial_marking, final_marking, variant='arc_degree')
+    f_score = (fitness_weight + precision_weight + generalization_weight + simplicity_weight) / ((fitness_weight / fitness['log_fitness']) + (precision_weight / precision) + (generalization_weight / generaliz) + (simplicity_weight / simplic))
+    print('HM: %.15f' % f_score, 'fitness: %.15f' % fitness['log_fitness'], 'precision: %.15f' % precision, 'generalization: %.15f' % generaliz, 'simplicity: %.15f' % simplic)
     bestone_file = bestone_file.replace("/", "-").replace(".", "-").replace("\\", "-")
     pm4py.write_pnml(petrinet, initial_marking, final_marking, 'petri-nets/best/' + bestone_file)
     pm4py.view_petri_net(petrinet, initial_marking, final_marking)
@@ -364,27 +318,21 @@ def write_and_show_best_pn(best_island_number, input_log_name, round, generation
 @decorators.measure_time
 def create_petri_net(cromossome, alphabet, input_log_name, round, island, generation, cache_petri_net):
     cromossomo_hash = hash_cromossomo_petri_net(cromossome)
-    cached_value = cache_petri_net.get(cromossomo_hash)
-    if isinstance(cached_value, tuple) and len(cached_value) == 3:
-        net, im, fm = cached_value
-        if net is not None and im is not None and fm is not None:
-            return cached_value
+    raw = cache_petri_net.get(cromossomo_hash)
+    if raw is not None:                                  # cache hit
+        net, im, fm = cloudpickle.loads(raw)
+        return net, im, fm
     bpmn_xml = generate_bpmn_from_cromossome(cromossome, alphabet)
-    time = str(dt.datetime.now()).replace(" ", "-").replace(":", "-").replace(".", "-")
-    bpmn_xml_file_path = 'petri-nets/temp/' + str(input_log_name.replace("\\", "-").replace("/", "-")) + '-' + str(round) + '-' + str(island) + '-' + str(generation) + '-' + str(time) + '.bpmn'
+    time = str(dt.datetime.now()).replace(" ", "-").replace(":", "-").replace(" ", "-").replace(".", "-")
+    bpmn_xml_file_path = 'petri-nets/temp/' + str(input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-")) + '-' + str(round) + '-' + str(island) + '-' + str(generation) + '-' + str(time) + '.bpmn'
     with open(bpmn_xml_file_path, "w", encoding="utf-8") as file:
         file.write(bpmn_xml)
     bpmn_model = pm4py.read_bpmn(bpmn_xml_file_path)
-    # pm4py.view_bpmn(bpmn_model)
     net, im, fm = pm4py.convert_to_petri_net(bpmn_model)
     net = pm4py.reduce_petri_net_invisibles(net)
     net, im, fm = pm4py.reduce_petri_net_implicit_places(net, im, fm)
     os.remove(bpmn_xml_file_path)
-    if isinstance(net, object) and isinstance(im, object) and isinstance(fm, object):
-        if cromossomo_hash not in cache_petri_net:
-            import sys
-            sys.setrecursionlimit(10000)
-            cache_petri_net[cromossomo_hash] = (net, im, fm)
+    cache_petri_net[cromossomo_hash] = cloudpickle.dumps((net, im, fm))
     return net, im, fm
 
 @decorators.measure_time
