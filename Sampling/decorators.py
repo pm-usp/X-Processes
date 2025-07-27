@@ -10,10 +10,7 @@ def measure_time(func):
     def wrapper(*args, **kwargs):
         start = time.time()
         result = func(*args, **kwargs)
-        write_time_measurement(
-            filename,
-            [func.__name__, time.time() - start, datetime.datetime.now(pytz.timezone("Brazil/East")).strftime("%d/%m/%Y %H:%M:%S")]
-        )
+        write_time_measurement(filename,[func.__name__, time.time() - start, datetime.datetime.now(pytz.timezone("Brazil/East")).strftime("%d/%m/%Y %H:%M:%S")])
         return result
     return wrapper
 

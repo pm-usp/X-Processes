@@ -13,6 +13,7 @@ if so == 'Linux':
     import time
     import errno
 
+
 @decorators.measure_time
 def write_to_locked_file(file_name, data):
     fileToOpen = open(file_name, 'a')

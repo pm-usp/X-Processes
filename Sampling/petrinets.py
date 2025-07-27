@@ -6,7 +6,6 @@ import os
 import hashlib
 import decorators
 import cloudpickle
-import fitness as ft
 
 @decorators.measure_time
 def get_gateway_type(value):
@@ -18,16 +17,7 @@ def get_gateway_type(value):
         return "bpmn:exclusiveGateway"
 
 
-import xml.etree.ElementTree as ET
-import numpy as np
-
-
 def get_gateway_type(value):
-    """
-    Exemplo simples. Altere conforme sua lógica real.
-    value > 0 -> 'bpmn:exclusiveGateway' ou 'bpmn:parallelGateway', etc.
-    """
-    # Vamos supor que value == 1 => exclusiveGateway, value >= 2 => parallelGateway
     if value == 1:
         return "bpmn:exclusiveGateway"
     else:
