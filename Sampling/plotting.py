@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt                                                                                         
+import matplotlib.pyplot as plt                                                                                   
 import islands as isl                                                                                                   
 from ast import literal_eval
 import decorators
@@ -49,12 +49,12 @@ def plot_evolution_integrated(input_log_name, round, number_of_islands):
         plt.plot(v_ave[j], label='Average fitness', linewidth=2.0, color='orange')                                      
         plt.plot(v_max[j], label='Highest fitness', linewidth=2.0, color='green')                                       
     plt.ylabel('Fitness')                                                                                               
-    plt.xlabel('Generation')                                                                                            
-    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=4, ncol=2, mode='expand', borderaxespad=0., prop={'size': 10})  
-    plt.ylim([0, 1.02])                                                                                                 
+    plt.xlabel('Generation')  
+    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=4, ncol=2, mode='expand', borderaxespad=0., prop={'size': 10})
+    plt.ylim([0, 1.02])
     plt.draw()
     input_log_name = input_log_name.replace("\\", "-")
-    name = 'output-graphs/graphs/' 'Log' + input_log_name + '-Round' + round + '-Integrated' + '.png'    
-    plt.savefig(name)                                                                                                   
-    plt.clf()                                                                                                           
-    return                                                                                                              
+    name = 'output-graphs/graphs/' 'Log' + input_log_name + '-Round' + round + '-Integrated' + '.png'
+    plt.savefig(name)
+    plt.clf()
+    return

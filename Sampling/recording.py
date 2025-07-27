@@ -2,6 +2,10 @@ import csv
 import platform
 import os
 import decorators
+import tempfile
+import time
+import uuid
+import portalocker
 
 so = platform.system()
 if so == 'Linux':
@@ -38,7 +42,7 @@ def record_evolution(input_log_name, round, parameters, island_number, highest_v
     fields2a = [str(round) + '	' + str(island_number) + '	' + values_of_parameters + str(current_generation) + '	' + str(island_start) + '	' + str(island_end) + '	' + str(island_duration) + '	' + highest_values_values + '	' + str(alphabet) + '	' + str(best_individual) + '	' + input_log_name + '	' + str(fitness_evolution)]
     fields2b = [str(round) + '	' + str(island_number) + '	' + values_of_parameters + str(current_generation) + '	' + str(island_start) + '	' + str(island_end) + '	' + str(island_duration) + '	' + highest_values_values]
 
-    input_log_name = input_log_name.replace("\\", "-").replace("/", "-")
+    input_log_name = input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-")
 
     if so == 'Windows':
         with open('output-files/' 'Log' + input_log_name + 'output-spreadsheet-complete.csv', 'a', newline='') as csvfile:
@@ -56,61 +60,62 @@ def record_evolution(input_log_name, round, parameters, island_number, highest_v
 
 
 @decorators.measure_time
-def write_locked_bestone(file_name, data):
-    fileToOpen = open(file_name, 'w')
+def write_atomic_bestone(file_path, data, max_retries=100, base_wait=0.05):
+    unique_id = uuid.uuid4().hex
+    temp_path = f"{file_path}-tmp-{unique_id}"
+    with open(temp_path, 'w') as f:
+        for line in data:
+            f.write(f"{line}\n")
+    retries = 0
     while True:
         try:
-            fcntl.flock(fileToOpen, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            for line in data:
-                fileToOpen.write(line + '\n')
-            fcntl.flock(fileToOpen, fcntl.LOCK_UN)
-            fileToOpen.close()
+            os.replace(temp_path, file_path)
             break
-        except IOError as e:
-            if e.errno != errno.EAGAIN:
-                raise
-            else:
-                time.sleep(0.01)
+        except PermissionError as e:
+            retries += 1
+            if retries > max_retries:
+                raise RuntimeError(f"Failed to replace {file_path} after {max_retries} retries due to file locking.") from e
+            wait_time = base_wait * (2 ** (retries - 1))
+            time.sleep(wait_time)
+        except FileNotFoundError as e:
+            raise RuntimeError(f"Temporary file {temp_path} not found. This indicates a logic error or external interference.") from e
+        except Exception as e:
+            raise RuntimeError(f"Unexpected error replacing {file_path}: {e}") from e
 
 
 @decorators.measure_time
-def record_bestone(island_number, highest_hm, generation, bestone_file, island_duration):
-    if not os.path.exists(bestone_file):
-        if so == 'Linux':
-            write_locked_bestone(bestone_file, [str(island_number), str(highest_hm), str(generation), str(island_duration)])
-        else:
-            with open(bestone_file, 'w') as bestone:
-                bestone.write(str(island_number) + '\n')
-                bestone.write(str(highest_hm) + '\n')
-                bestone.write(str(generation) + '\n')
-                bestone.write(str(island_duration) + '\n')
-                bestone.close()
-    else:
-        with open(bestone_file, 'r') as bestone:
-            best_island = bestone.readline().strip()
-            best_highest_hm = bestone.readline().strip()
-            generation_best = bestone.readline().strip()
-            total_duration = bestone.readline().strip()
-            bestone.close()
+def read_bestone(file_path, max_retries=100, base_wait=0.05):
+    retries = 0
+    while True:
+        try:
+            with open(file_path, 'r') as file:
+                portalocker.lock(file, portalocker.LOCK_SH)
+                lines = [line.strip() for line in file.readlines()]
+                portalocker.unlock(file)
+            if len(lines) != 4:
+                raise ValueError(f'File {file_path} has incorrect format. Expected 4 lines, got {len(lines)}.')
+            return lines
+        except FileNotFoundError as e:
+            raise e
+        except PermissionError as e:
+            retries += 1
+            if retries > max_retries:
+                raise RuntimeError(f"Failed to read {file_path} after {max_retries} retries due to file locking.") from e
+            wait_time = base_wait * (2 ** (retries - 1))
+            time.sleep(wait_time)
+        except Exception as e:
+            raise RuntimeError(f"Unexpected error reading {file_path}: {e}") from e
 
-        if highest_hm > float(best_highest_hm):
-            if so == 'Linux':
-                write_locked_bestone(bestone_file, [str(island_number), str(highest_hm), str(generation), str(island_duration)])
-            else:
-                with open(bestone_file, 'w') as bestone:
-                    bestone.write(str(island_number) + '\n')
-                    bestone.write(str(highest_hm) + '\n')
-                    bestone.write(str(generation) + '\n')
-                    bestone.write(str(island_duration) + '\n')
-                    bestone.close()
-        else:
-            if so == 'Linux':
-                write_locked_bestone(bestone_file, [str(best_island), str(best_highest_hm), str(generation_best), str(island_duration)])
-            else:
-                with open(bestone_file, 'w') as bestone:
-                    bestone.write(str(best_island) + '\n')
-                    bestone.write(str(best_highest_hm) + '\n')
-                    bestone.write(str(generation_best) + '\n')
-                    bestone.write(str(island_duration) + '\n')
-                    bestone.close()
-    return
+
+@decorators.measure_time
+def record_bestone_atomic(island_number, highest_hm, generation, bestone_file, island_duration):
+    try:
+        best_island, best_highest_hm, generation_best, total_duration = read_bestone(bestone_file)
+        best_highest_hm = float(best_highest_hm)
+    except (FileNotFoundError, ValueError):
+        best_island, best_highest_hm, generation_best, total_duration = None, None, None, None
+    if best_highest_hm is None or highest_hm > best_highest_hm:
+        data = [str(island_number), str(highest_hm), str(generation), str(island_duration)]
+    else:
+        data = [str(best_island), str(best_highest_hm), str(generation_best), str(island_duration)]
+    write_atomic_bestone(bestone_file, data)
