@@ -16,7 +16,7 @@
 
 This project is released under the terms of the GNU General Public License v3.0 or (at your option) any later version. See the LICENSE.GPL-3 file for details.
 
-This repository also includes a Java archive (`java/jbpt_mini-1.0.jar`) that is based on code distributed under the GNU Lesser General Public License v3.0 (LGPLv3). This `.jar` is executed via a runtime subprocess and may be replaced by a modified version that is interface-compatible, as allowed under section 4 of the LGPLv3. See https://github.com/jbpt for more details.
+This repository also includes a Java archive (`java/jbpt_mini-1.0.jar`) that is based on code distributed under the GNU Lesser General Public License v3.0 (LGPLv3). This `.jar` is executed via a runtime subprocess and may be replaced by a modified version that is interface-compatible, as allowed under section 4 of the LGPLv3. See https://github.com/jbpt for more details. This project also includes several Java `.jar` files located under `java/lib/`, which are derived from the [bpmtk project](https://github.com/nemo-91/bpmtk) and originally from the [ProM framework](https://www.promtools.org/). These libraries are redistributed under the terms of the GNU General Public License (GPL). See the LICENSE.GPL-3 file for details.
 
 You should have received copies of both the GNU General Public License and the GNU Lesser General Public License along with this project. If not, see:
 - https://www.gnu.org/licenses/gpl-3.0.html
