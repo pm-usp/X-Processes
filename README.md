@@ -11,3 +11,13 @@
   
 # Requirements: 
 - The requirements.txt refers only to the "Sampling" newest version.
+
+# Licensing and third-party components
+
+This project is released under the terms of the GNU General Public License v3.0 or (at your option) any later version. See the LICENSE.GPL-3 file for details.
+
+This repository also includes a Java archive (`java/jbpt_mini-1.0.jar`) that is based on code distributed under the GNU Lesser General Public License v3.0 (LGPLv3). This `.jar` is executed via a runtime subprocess and may be replaced by a modified version that is interface-compatible, as allowed under section 4 of the LGPLv3.
+
+You should have received copies of both the GNU General Public License and the GNU Lesser General Public License along with this project. If not, see:
+- https://www.gnu.org/licenses/gpl-3.0.html
+- https://www.gnu.org/licenses/lgpl-3.0.html
