@@ -5,14 +5,9 @@
       <text></text>
     </name>
     <page id="n0">
-      <place id="sink">
+      <place id="ent_Gateway_join_1">
         <name>
-          <text>sink</text>
-        </name>
-      </place>
-      <place id="exi_Gateway_split_1">
-        <name>
-          <text>exi_Gateway_split_1</text>
+          <text>ent_Gateway_join_1</text>
         </name>
       </place>
       <place id="source">
@@ -23,30 +18,46 @@
           <text>1</text>
         </initialMarking>
       </place>
-      <place id="ent_Gateway_join_1">
+      <place id="exi_Gateway_split_1">
         <name>
-          <text>ent_Gateway_join_1</text>
+          <text>exi_Gateway_split_1</text>
         </name>
       </place>
+      <place id="ent_Gateway_join_3">
+        <name>
+          <text>ent_Gateway_join_3</text>
+        </name>
+      </place>
+      <place id="sink">
+        <name>
+          <text>sink</text>
+        </name>
+      </place>
+      <transition id="Activity_4">
+        <name>
+          <text>Unmatched</text>
+        </name>
+      </transition>
+      <transition id="443ad0fe-28e2-4e5d-b8c4-baeb9f878725">
+        <name>
+          <text>443ad0fe-28e2-4e5d-b8c4-baeb9f878725</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="38e29545-7a3a-4e94-bd13-45bc357e332e"/>
+      </transition>
       <transition id="Activity_2">
         <name>
           <text>Completed</text>
-        </name>
-      </transition>
-      <transition id="Activity_3">
-        <name>
-          <text>Queued</text>
         </name>
       </transition>
       <transition id="sfl_Flow_1_1">
         <name>
           <text>sfl_Flow_1_1</text>
         </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="c3b1f60b-3126-4d3e-98ad-b484cbde5b84"/>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="b8579c84-3227-407e-9216-1b4dad7fc03d"/>
       </transition>
-      <transition id="Activity_4">
+      <transition id="Activity_3">
         <name>
-          <text>Unmatched</text>
+          <text>Queued</text>
         </name>
       </transition>
       <transition id="Activity_1">
@@ -54,16 +65,18 @@
           <text>Accepted</text>
         </name>
       </transition>
-      <arc id="2830694965248" source="exi_Gateway_split_1" target="Activity_3"/>
-      <arc id="2830694965824" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
-      <arc id="2830694967168" source="Activity_2" target="sink"/>
-      <arc id="2830694969568" source="Activity_4" target="ent_Gateway_join_1"/>
-      <arc id="2830694973408" source="Activity_1" target="exi_Gateway_split_1"/>
-      <arc id="2830689802848" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
-      <arc id="2830694970000" source="source" target="Activity_4"/>
-      <arc id="2830694960592" source="Activity_3" target="ent_Gateway_join_1"/>
-      <arc id="2830694966160" source="ent_Gateway_join_1" target="Activity_1"/>
-      <arc id="2830694965488" source="exi_Gateway_split_1" target="Activity_2"/>
+      <arc id="3133863400976" source="exi_Gateway_split_1" target="Activity_4"/>
+      <arc id="3133863398352" source="Activity_2" target="sink"/>
+      <arc id="3133863409616" source="Activity_1" target="exi_Gateway_split_1"/>
+      <arc id="3133863396944" source="ent_Gateway_join_1" target="Activity_1"/>
+      <arc id="3133863411024" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
+      <arc id="3133868022224" source="443ad0fe-28e2-4e5d-b8c4-baeb9f878725" target="ent_Gateway_join_3"/>
+      <arc id="3133854819792" source="Activity_3" target="ent_Gateway_join_1"/>
+      <arc id="3133863408976" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
+      <arc id="3133867455248" source="source" target="443ad0fe-28e2-4e5d-b8c4-baeb9f878725"/>
+      <arc id="3133854299664" source="Activity_4" target="ent_Gateway_join_3"/>
+      <arc id="3133863404176" source="exi_Gateway_split_1" target="Activity_2"/>
+      <arc id="3133854822480" source="ent_Gateway_join_3" target="Activity_3"/>
     </page>
     <finalmarkings>
       <marking>

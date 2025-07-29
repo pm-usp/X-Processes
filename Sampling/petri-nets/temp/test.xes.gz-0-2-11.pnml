@@ -5,14 +5,19 @@
       <text></text>
     </name>
     <page id="n0">
+      <place id="ent_Gateway_join_1">
+        <name>
+          <text>ent_Gateway_join_1</text>
+        </name>
+      </place>
+      <place id="ent_Gateway_join_3">
+        <name>
+          <text>ent_Gateway_join_3</text>
+        </name>
+      </place>
       <place id="sink">
         <name>
           <text>sink</text>
-        </name>
-      </place>
-      <place id="exi_Gateway_split_1">
-        <name>
-          <text>exi_Gateway_split_1</text>
         </name>
       </place>
       <place id="source">
@@ -23,47 +28,55 @@
           <text>1</text>
         </initialMarking>
       </place>
-      <place id="ent_Gateway_join_1">
+      <place id="exi_Gateway_split_1">
         <name>
-          <text>ent_Gateway_join_1</text>
+          <text>exi_Gateway_split_1</text>
         </name>
       </place>
-      <transition id="Activity_3">
-        <name>
-          <text>Queued</text>
-        </name>
-      </transition>
       <transition id="Activity_4">
         <name>
           <text>Unmatched</text>
         </name>
       </transition>
-      <transition id="Activity_2">
+      <transition id="Activity_3">
         <name>
-          <text>Completed</text>
+          <text>Queued</text>
         </name>
       </transition>
       <transition id="sfl_Flow_1_1">
         <name>
           <text>sfl_Flow_1_1</text>
         </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="1ae1ceb6-6acc-4517-a61f-0af6c57d0497"/>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="03305d66-f202-49b8-95dc-f441a8a23630"/>
+      </transition>
+      <transition id="Activity_2">
+        <name>
+          <text>Completed</text>
+        </name>
+      </transition>
+      <transition id="443ad0fe-28e2-4e5d-b8c4-baeb9f878725">
+        <name>
+          <text>443ad0fe-28e2-4e5d-b8c4-baeb9f878725</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="7c06f025-4bed-4f2f-b52b-6069f8989053"/>
       </transition>
       <transition id="Activity_1">
         <name>
           <text>Accepted</text>
         </name>
       </transition>
-      <arc id="2609489039904" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
-      <arc id="2609489048928" source="Activity_4" target="ent_Gateway_join_1"/>
-      <arc id="2609489035872" source="Activity_1" target="exi_Gateway_split_1"/>
-      <arc id="2609489047968" source="source" target="Activity_4"/>
-      <arc id="2609489043840" source="Activity_3" target="ent_Gateway_join_1"/>
-      <arc id="2609489047872" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
-      <arc id="2609489050656" source="ent_Gateway_join_1" target="Activity_1"/>
-      <arc id="2609489049408" source="exi_Gateway_split_1" target="Activity_2"/>
-      <arc id="2609489043216" source="exi_Gateway_split_1" target="Activity_3"/>
-      <arc id="2609526586544" source="Activity_2" target="sink"/>
+      <arc id="2560646553296" source="ent_Gateway_join_3" target="Activity_3"/>
+      <arc id="2560603229200" source="Activity_2" target="sink"/>
+      <arc id="2560646550096" source="443ad0fe-28e2-4e5d-b8c4-baeb9f878725" target="ent_Gateway_join_3"/>
+      <arc id="2560584929424" source="Activity_1" target="exi_Gateway_split_1"/>
+      <arc id="2560603115664" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
+      <arc id="2560594895312" source="ent_Gateway_join_1" target="Activity_1"/>
+      <arc id="2560584212944" source="Activity_3" target="ent_Gateway_join_1"/>
+      <arc id="2560602057168" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
+      <arc id="2560601130832" source="source" target="443ad0fe-28e2-4e5d-b8c4-baeb9f878725"/>
+      <arc id="2560647357200" source="Activity_4" target="ent_Gateway_join_3"/>
+      <arc id="2560595612240" source="exi_Gateway_split_1" target="Activity_2"/>
+      <arc id="2560584940880" source="exi_Gateway_split_1" target="Activity_4"/>
     </page>
     <finalmarkings>
       <marking>

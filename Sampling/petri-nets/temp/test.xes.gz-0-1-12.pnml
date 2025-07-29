@@ -5,14 +5,9 @@
       <text></text>
     </name>
     <page id="n0">
-      <place id="sink">
+      <place id="ent_Gateway_join_1">
         <name>
-          <text>sink</text>
-        </name>
-      </place>
-      <place id="exi_Gateway_split_1">
-        <name>
-          <text>exi_Gateway_split_1</text>
+          <text>ent_Gateway_join_1</text>
         </name>
       </place>
       <place id="source">
@@ -23,25 +18,40 @@
           <text>1</text>
         </initialMarking>
       </place>
-      <place id="ent_Gateway_join_1">
+      <place id="exi_Gateway_split_1">
         <name>
-          <text>ent_Gateway_join_1</text>
+          <text>exi_Gateway_split_1</text>
         </name>
       </place>
-      <transition id="Activity_2">
+      <place id="ent_Gateway_join_5">
         <name>
-          <text>Completed</text>
+          <text>ent_Gateway_join_5</text>
         </name>
-      </transition>
-      <transition id="sfl_Flow_1_1">
+      </place>
+      <place id="sink">
         <name>
-          <text>sfl_Flow_1_1</text>
+          <text>sink</text>
         </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="2bd3e728-b7a2-4cde-bcab-64b79dbdd980"/>
-      </transition>
+      </place>
       <transition id="Activity_4">
         <name>
           <text>Unmatched</text>
+        </name>
+      </transition>
+      <transition id="Gateway_join_5">
+        <name>
+          <text>Gateway_join_5</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="6cd28a83-2d4d-42f5-94be-43103cfb5deb"/>
+      </transition>
+      <transition id="Activity_1">
+        <name>
+          <text>Accepted</text>
+        </name>
+      </transition>
+      <transition id="Activity_2">
+        <name>
+          <text>Completed</text>
         </name>
       </transition>
       <transition id="Activity_3">
@@ -49,21 +59,24 @@
           <text>Queued</text>
         </name>
       </transition>
-      <transition id="Activity_1">
+      <transition id="sfl_Flow_1_1">
         <name>
-          <text>Accepted</text>
+          <text>sfl_Flow_1_1</text>
         </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="9d709c8a-a871-4e76-b038-36655963a1ce"/>
       </transition>
-      <arc id="1372608234368" source="exi_Gateway_split_1" target="Activity_3"/>
-      <arc id="1372608238880" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
-      <arc id="1372608246656" source="Activity_2" target="sink"/>
-      <arc id="1372608249248" source="Activity_4" target="ent_Gateway_join_1"/>
-      <arc id="1372608235136" source="source" target="Activity_4"/>
-      <arc id="1372608246848" source="Activity_3" target="ent_Gateway_join_1"/>
-      <arc id="1372608243296" source="ent_Gateway_join_1" target="Activity_1"/>
-      <arc id="1372608233936" source="Activity_1" target="exi_Gateway_split_1"/>
-      <arc id="1372608237776" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
-      <arc id="1372608241808" source="exi_Gateway_split_1" target="Activity_2"/>
+      <arc id="2332871998288" source="exi_Gateway_split_1" target="Activity_2"/>
+      <arc id="2332871988048" source="Activity_4" target="ent_Gateway_join_5"/>
+      <arc id="2332871991184" source="ent_Gateway_join_5" target="Gateway_join_5"/>
+      <arc id="2332874339088" source="ent_Gateway_join_1" target="Activity_1"/>
+      <arc id="2332872892752" source="Activity_3" target="ent_Gateway_join_1"/>
+      <arc id="2332872900240" source="source" target="Activity_3"/>
+      <arc id="2332874328336" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
+      <arc id="2332874333008" source="exi_Gateway_split_1" target="Activity_4"/>
+      <arc id="2332874331024" source="Activity_1" target="exi_Gateway_split_1"/>
+      <arc id="2332874334800" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
+      <arc id="2332871993360" source="Activity_2" target="ent_Gateway_join_5"/>
+      <arc id="2332871993808" source="Gateway_join_5" target="sink"/>
     </page>
     <finalmarkings>
       <marking>

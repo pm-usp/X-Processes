@@ -18,7 +18,7 @@ def create_alphabet(listOfLists_log):
     alphabet = np.array(sorted(alphabet_set), dtype=object)
     alphabet = np.insert(alphabet, 0, 'begin')
     alphabet = np.append(alphabet, 'end')
-    print('Number of activities:', len(alphabet) - 2)
+    print('Number of activities:', len(alphabet) - 2, flush=True)
     return alphabet
 
 @decorators.measure_time
@@ -33,7 +33,7 @@ def process_log(listOfLists_log):
     return listOfLists_log
 
 @decorators.measure_time
-def initialize_population(population_size, alphabet, listOfLists_log, fitness_weight, precision_weight, generalization_weight, simplicity_weight, input_log_name, round, island, generation, cache_fitness, cache_soundness, cache_petri_net, cache_n_tokens, act_fix_mode, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp):
+def initialize_population(population_size, alphabet, listOfLists_log, fitness_weight, precision_weight, generalization_weight, simplicity_weight, simplicity_criterion_method, input_log_name, round, island, generation, cache_fitness, cache_soundness, cache_petri_net, cache_n_tokens, act_fix_mode, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp):
     population = np.zeros((population_size, (len(alphabet) + 1), (len(alphabet)) + 1), dtype=np.int64)
     reference_cromossome = create_DFG(listOfLists_log, alphabet)
     reference_cromossome = np.array(reference_cromossome, dtype=np.int64)
@@ -45,7 +45,7 @@ def initialize_population(population_size, alphabet, listOfLists_log, fitness_we
     if island == 0:
         if pn.is_sound(reference_cromossome, alphabet, input_log_name, round, island, generation, cache_soundness, cache_petri_net):
             population[0] = reference_cromossome
-    evaluated_population, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log = fit.evaluate_population(population, alphabet, fitness_weight, precision_weight, generalization_weight, simplicity_weight, input_log_name, round, island, generation, cache_fitness, cache_petri_net, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp)
+    evaluated_population, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log = fit.evaluate_population(population, alphabet, fitness_weight, precision_weight, generalization_weight, simplicity_weight, simplicity_criterion_method, input_log_name, round, island, generation, cache_fitness, cache_petri_net, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp)
     return population, evaluated_population, reference_cromossome, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log
 
 @decorators.measure_time

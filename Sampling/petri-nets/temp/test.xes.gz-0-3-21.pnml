@@ -5,14 +5,19 @@
       <text></text>
     </name>
     <page id="n0">
+      <place id="ent_Gateway_join_1">
+        <name>
+          <text>ent_Gateway_join_1</text>
+        </name>
+      </place>
+      <place id="ent_Gateway_join_3">
+        <name>
+          <text>ent_Gateway_join_3</text>
+        </name>
+      </place>
       <place id="sink">
         <name>
           <text>sink</text>
-        </name>
-      </place>
-      <place id="exi_Gateway_split_1">
-        <name>
-          <text>exi_Gateway_split_1</text>
         </name>
       </place>
       <place id="source">
@@ -23,30 +28,36 @@
           <text>1</text>
         </initialMarking>
       </place>
-      <place id="ent_Gateway_join_1">
+      <place id="exi_Gateway_split_1">
         <name>
-          <text>ent_Gateway_join_1</text>
+          <text>exi_Gateway_split_1</text>
         </name>
       </place>
-      <transition id="Activity_2">
+      <transition id="Activity_4">
         <name>
-          <text>Completed</text>
+          <text>Unmatched</text>
         </name>
-      </transition>
-      <transition id="sfl_Flow_1_1">
-        <name>
-          <text>sfl_Flow_1_1</text>
-        </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="4cf76d1c-ebfa-4003-95ae-6115c7edf7b6"/>
       </transition>
       <transition id="Activity_3">
         <name>
           <text>Queued</text>
         </name>
       </transition>
-      <transition id="Activity_4">
+      <transition id="443ad0fe-28e2-4e5d-b8c4-baeb9f878725">
         <name>
-          <text>Unmatched</text>
+          <text>443ad0fe-28e2-4e5d-b8c4-baeb9f878725</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="d5cdc5ba-557b-4495-8a35-7b352a42b3b4"/>
+      </transition>
+      <transition id="sfl_Flow_1_1">
+        <name>
+          <text>sfl_Flow_1_1</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="24ef4eb6-dea5-4b50-b5a3-4f6af9104091"/>
+      </transition>
+      <transition id="Activity_2">
+        <name>
+          <text>Completed</text>
         </name>
       </transition>
       <transition id="Activity_1">
@@ -54,16 +65,18 @@
           <text>Accepted</text>
         </name>
       </transition>
-      <arc id="2830693493568" source="exi_Gateway_split_1" target="Activity_3"/>
-      <arc id="2830693489536" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
-      <arc id="2830648990016" source="exi_Gateway_split_1" target="Activity_2"/>
-      <arc id="2830694527824" source="Activity_4" target="ent_Gateway_join_1"/>
-      <arc id="2830648996592" source="Activity_2" target="sink"/>
-      <arc id="2830648997072" source="Activity_1" target="exi_Gateway_split_1"/>
-      <arc id="2830694800592" source="source" target="Activity_4"/>
-      <arc id="2830693485744" source="Activity_3" target="ent_Gateway_join_1"/>
-      <arc id="2830693485552" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
-      <arc id="2830697238736" source="ent_Gateway_join_1" target="Activity_1"/>
+      <arc id="3133866734096" source="ent_Gateway_join_3" target="Activity_3"/>
+      <arc id="3133854098704" source="exi_Gateway_split_1" target="Activity_4"/>
+      <arc id="3133865752080" source="Activity_2" target="sink"/>
+      <arc id="3133854104080" source="ent_Gateway_join_1" target="Activity_1"/>
+      <arc id="3133854093008" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
+      <arc id="3133866722640" source="443ad0fe-28e2-4e5d-b8c4-baeb9f878725" target="ent_Gateway_join_3"/>
+      <arc id="3133854095824" source="Activity_1" target="exi_Gateway_split_1"/>
+      <arc id="3133867569872" source="Activity_3" target="ent_Gateway_join_1"/>
+      <arc id="3133854094736" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
+      <arc id="3133866737552" source="source" target="443ad0fe-28e2-4e5d-b8c4-baeb9f878725"/>
+      <arc id="3133854104528" source="Activity_4" target="ent_Gateway_join_3"/>
+      <arc id="3133855339856" source="exi_Gateway_split_1" target="Activity_2"/>
     </page>
     <finalmarkings>
       <marking>

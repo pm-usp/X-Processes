@@ -5,9 +5,9 @@
       <text></text>
     </name>
     <page id="n0">
-      <place id="sink">
+      <place id="ent_Gateway_join_1">
         <name>
-          <text>sink</text>
+          <text>ent_Gateway_join_1</text>
         </name>
       </place>
       <place id="source">
@@ -18,9 +18,14 @@
           <text>1</text>
         </initialMarking>
       </place>
-      <place id="ent_Gateway_join_1">
+      <place id="ent_Gateway_join_5">
         <name>
-          <text>ent_Gateway_join_1</text>
+          <text>ent_Gateway_join_5</text>
+        </name>
+      </place>
+      <place id="sink">
+        <name>
+          <text>sink</text>
         </name>
       </place>
       <place id="exi_Gateway_split_1">
@@ -33,9 +38,9 @@
           <text>Unmatched</text>
         </name>
       </transition>
-      <transition id="Activity_3">
+      <transition id="Activity_1">
         <name>
-          <text>Queued</text>
+          <text>Accepted</text>
         </name>
       </transition>
       <transition id="Activity_2">
@@ -43,27 +48,35 @@
           <text>Completed</text>
         </name>
       </transition>
-      <transition id="Activity_1">
+      <transition id="Gateway_join_5">
         <name>
-          <text>Accepted</text>
+          <text>Gateway_join_5</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="8f7fcf89-d25b-485b-8b48-9029214d3c8e"/>
+      </transition>
+      <transition id="Activity_3">
+        <name>
+          <text>Queued</text>
         </name>
       </transition>
       <transition id="sfl_Flow_1_1">
         <name>
           <text>sfl_Flow_1_1</text>
         </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="f8db245e-7f63-474a-9a34-d68f2239266f"/>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="78c12593-4319-4e31-b420-4d2948defbfc"/>
       </transition>
-      <arc id="1372616603744" source="exi_Gateway_split_1" target="Activity_3"/>
-      <arc id="1372616603648" source="Activity_1" target="exi_Gateway_split_1"/>
-      <arc id="1372616604224" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
-      <arc id="1372616599520" source="source" target="Activity_4"/>
-      <arc id="1372616599712" source="Activity_3" target="ent_Gateway_join_1"/>
-      <arc id="1372616602784" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
-      <arc id="1372616598944" source="exi_Gateway_split_1" target="Activity_2"/>
-      <arc id="1372616598608" source="Activity_2" target="sink"/>
-      <arc id="1372616603888" source="Activity_4" target="ent_Gateway_join_1"/>
-      <arc id="1372616603984" source="ent_Gateway_join_1" target="Activity_1"/>
+      <arc id="2332869170128" source="exi_Gateway_split_1" target="Activity_2"/>
+      <arc id="2332869170640" source="Activity_4" target="ent_Gateway_join_5"/>
+      <arc id="2332869165136" source="ent_Gateway_join_5" target="Gateway_join_5"/>
+      <arc id="2332882399568" source="Activity_3" target="ent_Gateway_join_1"/>
+      <arc id="2332882389136" source="source" target="Activity_3"/>
+      <arc id="2332869170064" source="ent_Gateway_join_1" target="Activity_1"/>
+      <arc id="2332869174736" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
+      <arc id="2332869171920" source="exi_Gateway_split_1" target="Activity_4"/>
+      <arc id="2332869167312" source="Activity_1" target="exi_Gateway_split_1"/>
+      <arc id="2332869172752" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
+      <arc id="2332869171600" source="Activity_2" target="ent_Gateway_join_5"/>
+      <arc id="2332869171536" source="Gateway_join_5" target="sink"/>
     </page>
     <finalmarkings>
       <marking>

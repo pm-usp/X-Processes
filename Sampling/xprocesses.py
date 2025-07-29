@@ -23,7 +23,7 @@ sys.setrecursionlimit(1500)
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                  description= 'X-Processes is an automatic process model discovery method based on genetic algorithms',
-                                 epilog='Example of use: python xprocesses.py -log input-logs/test.xes.gz -isl 4 -rnd 5 -gen 500 -tme 3600 -con 25 -fit 1 -prc 1 -gnl 1 -smp 1 -fix 0')
+                                 epilog='Example of use: python xprocesses.py -log input-logs/test.xes.gz -isl 4 -rnd 5 -gen 500 -tme 3600 -con 25 -fit 1 -prc 1 -gnl 1 -smp 1 -smp 1 -fix 0 -spl 0 -inc 0 -sic 0 -tmc 0')
 
 parser.add_argument('-log', required=True, type=str, help='log (default: None) | (type: .xes.gz)')
 parser.add_argument('-isl', type=int, default=1, help='number of islands (default: 1) | (type: int)')
@@ -35,6 +35,7 @@ parser.add_argument('-fit', type=float, default=1, help='fitness weight (default
 parser.add_argument('-prc', type=float, default=1, help='precision weight (default: 1) | (type: float)')
 parser.add_argument('-gnl', type=float, default=1, help='generalization weight (default: 1) | (type: float)')
 parser.add_argument('-smp', type=float, default=1, help='simplicity weight (default: 1) | (type: float)')
+parser.add_argument('-scm', type=int, default=0, help='method for the simplicity criterion: 0 for "arc_degree" implemented by PM4Py, 1 for "structuredness" implemented by Apromore (default: 0) | (type: int)')
 parser.add_argument('-fix', type=int, default=1, help='activity selection mode: 1 for fixed number of activities as in the event log, 0 for dynamic subset optimization during fitness evolution (default: 1) | (type: int)')
 parser.add_argument('-spl', type=int, default=0, help='event log sampling: 1 for processing with sampling, 0 for processing with full event log (default: 0) | (type: int)')
 parser.add_argument('-inc', type=float, default=0.25, help='percentage increment of event log sampling, when sampling strategy is being used (default: 0.25) | (type: float)')
@@ -53,6 +54,7 @@ fitness_weight = args.fit
 precision_weight = args.prc
 generalization_weight = args.gnl
 simplicity_weight = args.smp
+simplicity_criterion_method = args.scm
 act_fix_mode = args.fix
 event_log_sampling = args.spl
 if event_log_sampling:
@@ -92,7 +94,7 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
         inp.process_log(df_log)
         island_sizes[island_number] = population_size
         percentage_of_best_individuals_for_migration_all_islands[island_number] = percentage_of_best_individuals_for_migration_per_island
-        population, evaluated_population, reference_cromossome, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log = inp.initialize_population(population_size, alphabet, df_log, fitness_weight, precision_weight, generalization_weight, simplicity_weight, input_log_name, round, island_number, 0, cache_fitness, cache_soundness, cache_petri_net, cache_n_tokens, act_fix_mode, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp)
+        population, evaluated_population, reference_cromossome, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log = inp.initialize_population(population_size, alphabet, df_log, fitness_weight, precision_weight, generalization_weight, simplicity_weight, simplicity_criterion_method, input_log_name, round, island_number, 0, cache_fitness, cache_soundness, cache_petri_net, cache_n_tokens, act_fix_mode, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp)
         fitness_evolution = []
         highest_value_and_position, lowest_value, average_value, sorted_evaluated_population = calculate_statistics(evaluated_population)
         fitness_evolution.append([lowest_value, highest_value_and_position[0][0], average_value, 0, highest_value_and_position[0][1], highest_value_and_position[0][2], highest_value_and_position[0][3], highest_value_and_position[0][4], 0, 0, 0, 0])
@@ -101,7 +103,7 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
         island_duration = island_end - island_start
         number_of_sampled_cases, number_of_remaining_cases, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log = log.calculate_numbers_of_sampled_and_remaining_cases(input_log_name, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp)
         sampling_rate = number_of_sampled_cases / (number_of_sampled_cases + number_of_remaining_cases) * 100
-        print('r', round, '%.5f' % highest_value_and_position[0][0], '%.5f' % highest_value_and_position[0][1], '%.5f' % highest_value_and_position[0][2], '%.5f' % highest_value_and_position[0][3], '%.5f' % highest_value_and_position[0][4], '| i', '{:>2}'.format(island_number), '| g', '{:>3}'.format('0'), '| REP', '{:>2}'.format(fitness_evolution[0][8]), '{:>2}'.format(fitness_evolution[0][3]), '{:>2}'.format(fitness_evolution[0][9]), '{:>2}'.format(fitness_evolution[0][10]), '{:>2}'.format(fitness_evolution[0][11]), '|', op.count_active_inactive_tasks(population[int(highest_value_and_position[1])]), '|', str(island_duration).split('.')[0], '|', dt.datetime.now(pytz.timezone("Brazil/East")).strftime("%H:%M:%S"), '|', '%.1f%%' % sampling_rate)
+        print('r', round, '%.5f' % highest_value_and_position[0][0], '%.5f' % highest_value_and_position[0][1], '%.5f' % highest_value_and_position[0][2], '%.5f' % highest_value_and_position[0][3], '%.5f' % highest_value_and_position[0][4], '| i', '{:>2}'.format(island_number), '| g', '{:>3}'.format('0'), '| REP', '{:>2}'.format(fitness_evolution[0][8]), '{:>2}'.format(fitness_evolution[0][3]), '{:>2}'.format(fitness_evolution[0][9]), '{:>2}'.format(fitness_evolution[0][10]), '{:>2}'.format(fitness_evolution[0][11]), '|', op.count_active_inactive_tasks(population[int(highest_value_and_position[1])]), '|', str(island_duration).split('.')[0], '|', dt.datetime.now(pytz.timezone("Brazil/East")).strftime("%H:%M:%S"), '|', '%.1f%%' % sampling_rate, flush=True)
         rec.record_bestone_atomic(island_number, highest_value_and_position[0][0], 0, bestone_file, island_duration)
         isl.set_broadcast(population, sorted_evaluated_population, island_number, percentage_of_best_individuals_for_migration_per_island, broadcast)
         if isl.receive_individuals(population, island_number, sorted_evaluated_population, messenger, evaluated_population) == 1:
@@ -113,7 +115,7 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
             highest_value_and_position, sorted_evaluated_population = cyc.choose_highest(evaluated_population)
         rec.record_evolution(input_log_name, str(round), paramenter_set[island_number + 1], island_number, highest_value_and_position[0], fitness_evolution, alphabet, population[int(highest_value_and_position[1])], island_start, island_end, island_duration, 0)
         for current_generation in range(1, max_number_of_generations):
-            population, evaluated_population, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log = cyc.generation(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, fitness_weight, precision_weight, generalization_weight, simplicity_weight, input_log_name, round, island_number, current_generation, on_off_task_mutation_probability, max_perc_of_num_tasks_for_on_off_task_mutation, cache_fitness, cache_soundness, cache_petri_net, cache_n_tokens, act_fix_mode, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp)
+            population, evaluated_population, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log = cyc.generation(population, reference_cromossome, evaluated_population, crossover_probability, max_perc_of_num_tasks_for_crossover, task_mutation_probability, gateway_mutation_probability, max_perc_of_num_tasks_for_task_mutation, max_perc_of_num_tasks_for_gateway_mutation, elitism_percentage, sorted_evaluated_population, alphabet, fitness_weight, precision_weight, generalization_weight, simplicity_weight, simplicity_criterion_method, input_log_name, round, island_number, current_generation, on_off_task_mutation_probability, max_perc_of_num_tasks_for_on_off_task_mutation, cache_fitness, cache_soundness, cache_petri_net, cache_n_tokens, act_fix_mode, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp)
             highest_value_and_position, lowest_value, average_value, sorted_evaluated_population = calculate_statistics(evaluated_population)
             fitness_evolution.append([lowest_value, highest_value_and_position[0][0], average_value, 0, highest_value_and_position[0][1], highest_value_and_position[0][2], highest_value_and_position[0][3], highest_value_and_position[0][4], 0, 0, 0, 0])
             fitness_evolution[current_generation][8] = (fitness_evolution[current_generation - 1][8] + 1 if fitness_evolution[current_generation][1] == fitness_evolution[current_generation - 1][1] else -1 if fitness_evolution[current_generation][1] < fitness_evolution[current_generation - 1][1] else fitness_evolution[current_generation][8])
@@ -126,7 +128,7 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
             island_duration = island_end - island_start
             number_of_sampled_cases, number_of_remaining_cases, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log = log.calculate_numbers_of_sampled_and_remaining_cases(input_log_name, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp)
             sampling_rate = number_of_sampled_cases / (number_of_sampled_cases + number_of_remaining_cases) * 100
-            print('r', round, '%.5f' % highest_value_and_position[0][0], '%.5f' % highest_value_and_position[0][1], '%.5f' % highest_value_and_position[0][2], '%.5f' % highest_value_and_position[0][3], '%.5f' % highest_value_and_position[0][4], '| i', '{:>2}'.format(island_number), '| g', '{:>3}'.format(current_generation), '| REP', '{:>2}'.format(fitness_evolution[current_generation][8]), '{:>2}'.format(fitness_evolution[current_generation][3]), '{:>2}'.format(fitness_evolution[current_generation][9]), '{:>2}'.format(fitness_evolution[current_generation][10]), '{:>2}'.format(fitness_evolution[current_generation][11]), '|', op.count_active_inactive_tasks(population[int(highest_value_and_position[1])]), '|', str(island_duration).split('.')[0], '|', dt.datetime.now(pytz.timezone("Brazil/East")).strftime("%H:%M:%S"), '|', '%.1f%%' % sampling_rate)
+            print('r', round, '%.5f' % highest_value_and_position[0][0], '%.5f' % highest_value_and_position[0][1], '%.5f' % highest_value_and_position[0][2], '%.5f' % highest_value_and_position[0][3], '%.5f' % highest_value_and_position[0][4], '| i', '{:>2}'.format(island_number), '| g', '{:>3}'.format(current_generation), '| REP', '{:>2}'.format(fitness_evolution[current_generation][8]), '{:>2}'.format(fitness_evolution[current_generation][3]), '{:>2}'.format(fitness_evolution[current_generation][9]), '{:>2}'.format(fitness_evolution[current_generation][10]), '{:>2}'.format(fitness_evolution[current_generation][11]), '|', op.count_active_inactive_tasks(population[int(highest_value_and_position[1])]), '|', str(island_duration).split('.')[0], '|', dt.datetime.now(pytz.timezone("Brazil/East")).strftime("%H:%M:%S"), '|', '%.1f%%' % sampling_rate, flush=True)
             rec.record_bestone_atomic(island_number, highest_value_and_position[0][0], current_generation, bestone_file, island_duration)
             isl.set_broadcast(population, sorted_evaluated_population, island_number, percentage_of_best_individuals_for_migration_per_island, broadcast)
             if ((fitness_evolution[current_generation][8] >= sampling_increasing_criteria)) or (island_duration > dt.timedelta(seconds=max_processing_time)):
@@ -156,7 +158,7 @@ def run_round(paramenter_set, number_of_islands, round, broadcast, messenger, is
     except Exception as e:
         import traceback
         error_message = traceback.format_exc()
-        print("Exceção capturada em run_round (ilha {}):\n{}".format(island_number, error_message))
+        print("Exceção capturada em run_round (ilha {}):\n{}".format(island_number, error_message), flush=True)
         return {"error": error_message}
 
 
@@ -190,7 +192,7 @@ def monitor_with_timeout(processes, start_times, max_processing_time, number_of_
                     effective_timeout = max(timeout_limit, min_timeout)
                     effective_timeout = min(effective_timeout, (max_processing_time + 300))
                     if elapsed > effective_timeout:
-                        print(f"[TIMEOUT] Island {i} exceeded {effective_timeout:.1f}s. Current time: {elapsed:.1f}s. Finishing.")
+                        print(f"[TIMEOUT] Island {i} exceeded {effective_timeout:.1f}s. Current time: {elapsed:.1f}s. Finishing.", flush=True)
                         proc.terminate()
                         proc.join()
         if not any(alive):
@@ -200,13 +202,13 @@ def monitor_with_timeout(processes, start_times, max_processing_time, number_of_
 
 if __name__ == '__main__':
     sys.setrecursionlimit(10000)
-    print(dt.datetime.now(pytz.timezone("Brazil/East")).strftime("%H:%M:%S"))
+    print(dt.datetime.now(pytz.timezone("Brazil/East")).strftime("%H:%M:%S"), flush=True)
     paramenter_set = []
     with open('input-parameters/input-parameters.csv', 'r') as parameters:
         for line in isl.nonblank_lines(parameters):
             paramenter_set.append(line.split(';'))
     full_df_log, full_xes_log, input_log_name = log.import_log(input_xes_log)
-    print(dt.datetime.now(pytz.timezone("Brazil/East")).strftime("%H:%M:%S"))
+    print(dt.datetime.now(pytz.timezone("Brazil/East")).strftime("%H:%M:%S"), flush=True)
     alphabet = inp.create_alphabet(full_df_log)
     for round in range(0, number_of_rounds):
         filetimestamp = str(dt.datetime.now()).replace(" ", "-").replace(":", "-").replace(" ", "-").replace(".", "-")
@@ -258,9 +260,9 @@ if __name__ == '__main__':
             generation_best = bestone.readline().strip()
             duration_total = bestone.readline().strip()
             bestone.close()
-        print('Best island: ', best_island_number)
-        print('Highest HM: ', best_highest_hm)
-        print('Generation: ', generation_best)
-        print('Duration: ', duration_total)
+        print('Best island: ', best_island_number, flush=True)
+        print('Highest HM: ', best_highest_hm, flush=True)
+        print('Generation: ', generation_best, flush=True)
+        print('Duration: ', duration_total, flush=True)
         pn.write_and_show_best_pn(best_island_number, input_log_name, round, generation_best, bestone_file, full_xes_log, fitness_weight, precision_weight, generalization_weight, simplicity_weight)
         os.remove(bestone_file)

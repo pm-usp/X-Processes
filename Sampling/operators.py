@@ -827,22 +827,22 @@ def count_active_inactive_tasks(cromossome):
 def check_condition(cromossome, source):
     for row in range(len(cromossome) - 2):
         if not is_there_at_least_one_row_active_task_wrapper(cromossome, row) and cromossome[row][-1] != -1:
-            print(1, cromossome, source)
+            print(1, cromossome, source, flush=True)
             return False
         if not is_there_at_least_two_row_active_tasks_wrapper(cromossome, row) and cromossome[row][-1] in [1,2,3]:
-            print(2, cromossome, source)
+            print(2, cromossome, source, flush=True)
             return False
         if is_there_at_least_two_row_active_tasks_wrapper(cromossome, row) and cromossome[row][-1] == 0:
-            print(3, cromossome, source)
+            print(3, cromossome, source, flush=True)
             return False
     for col in range(1, len(cromossome) - 1):
         if not is_there_at_least_one_column_active_task_wrapper(cromossome, col) and cromossome[-1][col] != -1:
-            print(4, cromossome, source)
+            print(4, cromossome, source, flush=True)
             return False
         if not is_there_at_least_two_column_active_tasks_wrapper(cromossome, col) and cromossome[-1][col] in [1,2,3]:
-            print(5, cromossome, source)
+            print(5, cromossome, source, flush=True)
             return False
         if is_there_at_least_two_column_active_tasks_wrapper(cromossome, col) and cromossome[-1][col] == 0:
-            print(6, cromossome, source)
+            print(6, cromossome, source, flush=True)
             return False
     return True

@@ -19,7 +19,7 @@ def hash_xes_log(xes_log):
     return hashlib.sha256(xes_log_str.encode()).hexdigest()
 
 @decorators.measure_time
-def evaluate_population(population, alphabet, fitness_weight, precision_weight, generalization_weight, simplicity_weight, input_log_name, round, island, generation, cache_fitness, cache_petri_net, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp):
+def evaluate_population(population, alphabet, fitness_weight, precision_weight, generalization_weight, simplicity_weight, simplicity_criterion_method, input_log_name, round, island, generation, cache_fitness, cache_petri_net, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp):
     # sampled_xes_log_file_path = 'input-logs/log-sampling/sampled-' + str(input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-")).replace("input-logs-", "").replace(".xes", "").replace(".gz", "") + '.xes'
     basename = input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-").replace("input-logs-", "").replace(".xes", "").replace(".gz", "")
     sampled_xes_log_file_path = f'input-logs/log-sampling/sampled-{basename}-{filetimestamp}.xes'
@@ -28,14 +28,14 @@ def evaluate_population(population, alphabet, fitness_weight, precision_weight, 
     evaluation_values = []
     evaluation_sum = 0
     for i, individual in enumerate(population):
-        individual_evaluation = evaluate_individual(individual, alphabet, fitness_weight, precision_weight, generalization_weight, simplicity_weight, i, xes_log, input_log_name, round, island, generation, cache_fitness, cache_petri_net)
+        individual_evaluation = evaluate_individual(individual, alphabet, fitness_weight, precision_weight, generalization_weight, simplicity_weight, simplicity_criterion_method, i, xes_log, input_log_name, round, island, generation, cache_fitness, cache_petri_net)
         evaluation_values.append(individual_evaluation)
         evaluation_sum += individual_evaluation[0]
     evaluated_population = [evaluation_sum, evaluation_values]
     return evaluated_population, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log
 
 @decorators.measure_time
-def evaluate_individual(cromossome, alphabet, fitness_weight, precision_weight, generalization_weight, simplicity_weight, i, xes_log, input_log_name, round, island, generation, cache_fitness, cache_petri_net):
+def evaluate_individual(cromossome, alphabet, fitness_weight, precision_weight, generalization_weight, simplicity_weight, simplicity_criterion_method, i, xes_log, input_log_name, round, island, generation, cache_fitness, cache_petri_net):
     cromossomo_hash = hash_cromossomo_fitness(cromossome)
     xes_log_hash = hash_xes_log(xes_log)
     cache_key = f"{cromossomo_hash}_{xes_log_hash}"
@@ -51,9 +51,10 @@ def evaluate_individual(cromossome, alphabet, fitness_weight, precision_weight, 
     fitness = pm4py.fitness_alignments(xes_log, petrinet, initial_marking, final_marking)
     precision = pm4py.precision_alignments(xes_log, petrinet, initial_marking, final_marking)
     generaliz = pm4py.generalization_tbr(xes_log, petrinet, initial_marking, final_marking)
-    simplic = pm4py.simplicity_petri_net(petrinet, initial_marking, final_marking, variant='arc_degree')
-    #simplic = structuredness(petrinet, initial_marking, final_marking)
-
+    if simplicity_criterion_method == 0:
+        simplic = pm4py.simplicity_petri_net(petrinet, initial_marking, final_marking, variant='arc_degree')
+    elif simplicity_criterion_method == 1:
+        simplic = structuredness(petrinet, initial_marking, final_marking)
     if (isinstance(fitness, dict) and 'log_fitness' in fitness and isinstance(precision, (int, float)) and isinstance(generaliz, (int, float)) and isinstance(simplic, (int, float))):
         if cache_key not in cache_fitness:
             cache_fitness[cache_key] = (fitness, precision, generaliz, simplic)

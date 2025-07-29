@@ -5,6 +5,21 @@
       <text></text>
     </name>
     <page id="n0">
+      <place id="ent_Gateway_join_1">
+        <name>
+          <text>ent_Gateway_join_1</text>
+        </name>
+      </place>
+      <place id="exi_Gateway_split_1">
+        <name>
+          <text>exi_Gateway_split_1</text>
+        </name>
+      </place>
+      <place id="ent_Gateway_join_3">
+        <name>
+          <text>ent_Gateway_join_3</text>
+        </name>
+      </place>
       <place id="sink">
         <name>
           <text>sink</text>
@@ -18,52 +33,50 @@
           <text>1</text>
         </initialMarking>
       </place>
-      <place id="ent_Gateway_join_1">
+      <transition id="Activity_4">
         <name>
-          <text>ent_Gateway_join_1</text>
+          <text>Unmatched</text>
         </name>
-      </place>
-      <place id="exi_Gateway_split_1">
+      </transition>
+      <transition id="443ad0fe-28e2-4e5d-b8c4-baeb9f878725">
         <name>
-          <text>exi_Gateway_split_1</text>
+          <text>443ad0fe-28e2-4e5d-b8c4-baeb9f878725</text>
         </name>
-      </place>
-      <transition id="Activity_1">
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="8efc6c9a-35e8-4f2f-85cf-881d58225c76"/>
+      </transition>
+      <transition id="sfl_Flow_1_1">
         <name>
-          <text>Accepted</text>
+          <text>sfl_Flow_1_1</text>
         </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="2b8a4c4b-41bc-4015-9cd7-e7f08215367e"/>
       </transition>
       <transition id="Activity_2">
         <name>
           <text>Completed</text>
         </name>
       </transition>
-      <transition id="Activity_4">
-        <name>
-          <text>Unmatched</text>
-        </name>
-      </transition>
-      <transition id="sfl_Flow_1_1">
-        <name>
-          <text>sfl_Flow_1_1</text>
-        </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="b3ef188f-8700-42be-9891-1ead0bf7f8d6"/>
-      </transition>
       <transition id="Activity_3">
         <name>
           <text>Queued</text>
         </name>
       </transition>
-      <arc id="2609495450080" source="Activity_2" target="sink"/>
-      <arc id="2609495454592" source="Activity_1" target="exi_Gateway_split_1"/>
-      <arc id="2609495445664" source="Activity_4" target="ent_Gateway_join_1"/>
-      <arc id="2609495450560" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
-      <arc id="2609495446336" source="source" target="Activity_4"/>
-      <arc id="2609495445280" source="Activity_3" target="ent_Gateway_join_1"/>
-      <arc id="2609495452480" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
-      <arc id="2609495456608" source="ent_Gateway_join_1" target="Activity_1"/>
-      <arc id="2609495449072" source="exi_Gateway_split_1" target="Activity_3"/>
-      <arc id="2609495455216" source="exi_Gateway_split_1" target="Activity_2"/>
+      <transition id="Activity_1">
+        <name>
+          <text>Accepted</text>
+        </name>
+      </transition>
+      <arc id="2560595694864" source="Activity_2" target="sink"/>
+      <arc id="2560594651664" source="443ad0fe-28e2-4e5d-b8c4-baeb9f878725" target="ent_Gateway_join_3"/>
+      <arc id="2560594645776" source="ent_Gateway_join_1" target="Activity_1"/>
+      <arc id="2560595703056" source="sfl_Flow_1_1" target="ent_Gateway_join_1"/>
+      <arc id="2560594649744" source="Activity_1" target="exi_Gateway_split_1"/>
+      <arc id="2560583947984" source="Activity_3" target="ent_Gateway_join_1"/>
+      <arc id="2560594655184" source="exi_Gateway_split_1" target="sfl_Flow_1_1"/>
+      <arc id="2560594644560" source="source" target="443ad0fe-28e2-4e5d-b8c4-baeb9f878725"/>
+      <arc id="2560594649872" source="Activity_4" target="ent_Gateway_join_3"/>
+      <arc id="2560595703888" source="exi_Gateway_split_1" target="Activity_2"/>
+      <arc id="2560594643344" source="exi_Gateway_split_1" target="Activity_4"/>
+      <arc id="2560594652560" source="ent_Gateway_join_3" target="Activity_3"/>
     </page>
     <finalmarkings>
       <marking>

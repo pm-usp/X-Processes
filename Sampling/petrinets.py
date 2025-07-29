@@ -297,7 +297,7 @@ def write_and_show_best_pn(best_island_number, input_log_name, round, generation
     #simplic = ft.structuredness(petrinet, initial_marking, final_marking)
     simplic = pm4py.simplicity_petri_net(petrinet, initial_marking, final_marking, variant='arc_degree')
     f_score = (fitness_weight + precision_weight + generalization_weight + simplicity_weight) / ((fitness_weight / fitness['log_fitness']) + (precision_weight / precision) + (generalization_weight / generaliz) + (simplicity_weight / simplic))
-    print('HM: %.15f' % f_score, 'fitness: %.15f' % fitness['log_fitness'], 'precision: %.15f' % precision, 'generalization: %.15f' % generaliz, 'simplicity: %.15f' % simplic)
+    print('HM: %.15f' % f_score, 'fitness: %.15f' % fitness['log_fitness'], 'precision: %.15f' % precision, 'generalization: %.15f' % generaliz, 'simplicity: %.15f' % simplic, flush=True)
     bestone_file = bestone_file.replace("/", "-").replace(".", "-").replace("\\", "-")
     pm4py.write_pnml(petrinet, initial_marking, final_marking, 'petri-nets/best/' + bestone_file)
     pm4py.view_petri_net(petrinet, initial_marking, final_marking)

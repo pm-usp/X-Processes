@@ -47,12 +47,12 @@ def add_fictitious_timestamps_file(input_xes, output_xes, start_time="2024-01-01
                 current_time += timedelta(seconds=increment_seconds)
 
     tree.write(output_xes, encoding="UTF-8", xml_declaration=True)
-    print(f"Timestamps fictícios adicionados no arquivo temporário: {output_xes}")
+    print(f"Timestamps fictícios adicionados no arquivo temporário: {output_xes}", flush=True)
 
 @decorators.measure_time
 def import_log(input_xes_log):
     if not has_timestamp_in_xes(input_xes_log):
-        print("Nenhum timestamp encontrado no XES. Gerando timestamps fictícios...")
+        print("Nenhum timestamp encontrado no XES. Gerando timestamps fictícios...", flush=True)
         # Cria arquivo temporário com timestamps
         temp_fd, temp_xes_path = tempfile.mkstemp(suffix=".xes")
         os.close(temp_fd)  # Fecha o descritor de arquivo
