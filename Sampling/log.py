@@ -53,15 +53,12 @@ def add_fictitious_timestamps_file(input_xes, output_xes, start_time="2024-01-01
 def import_log(input_xes_log):
     if not has_timestamp_in_xes(input_xes_log):
         print("Nenhum timestamp encontrado no XES. Gerando timestamps fictícios...", flush=True)
-        # Cria arquivo temporário com timestamps
         temp_fd, temp_xes_path = tempfile.mkstemp(suffix=".xes")
-        os.close(temp_fd)  # Fecha o descritor de arquivo
+        os.close(temp_fd)
         add_fictitious_timestamps_file(input_xes_log, temp_xes_path)
         xes_log_path = temp_xes_path
     else:
         xes_log_path = input_xes_log
-
-    # Carrega o log (original ou temporário)
     xes_log = pm4py.read_xes(xes_log_path)
     input_log_name = re.search(r"[^//]*$", input_xes_log).group(0)
     data1 = pm4py.convert_to_dataframe(xes_log)
@@ -75,8 +72,6 @@ def import_log(input_xes_log):
 
 @decorators.measure_time
 def sample_log(perc, input_log_name, sampled_log_lock, remaining_log_lock, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp):
-    # sampled_xes_log_file_path = 'input-logs/log-sampling/sampled-' + str(input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-")).replace("input-logs-", "").replace(".xes", "").replace(".gz", "") + '.xes'
-    # remaining_xes_log_file_path = 'input-logs/log-sampling/remaining-' + str(input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-")).replace("input-logs-", "").replace(".xes", "").replace(".gz", "") + '.xes'
     basename = input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-").replace("input-logs-", "").replace(".xes", "").replace(".gz", "")
     sampled_xes_log_file_path = f'input-logs/log-sampling/sampled-{basename}-{filetimestamp}.xes'
     remaining_xes_log_file_path = f'input-logs/log-sampling/remaining-{basename}-{filetimestamp}.xes'
@@ -131,8 +126,6 @@ def transform_from_sampled_xes_log(sampled_xes_log):
 
 @decorators.measure_time
 def calculate_numbers_of_sampled_and_remaining_cases(input_log_name, cached_sampled_xes_log, cached_remaining_xes_log, last_file_size_sampled_xes_log, last_file_size_remaining_xes_log, filetimestamp):
-    # sampled_xes_log_file_path = 'input-logs/log-sampling/sampled-' + str(input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-")).replace("input-logs-", "").replace(".xes", "").replace(".gz", "") + '.xes'
-    # remaining_xes_log_file_path = 'input-logs/log-sampling/remaining-' + str(input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-")).replace("input-logs-", "").replace(".xes", "").replace(".gz", "") + '.xes'
     basename = input_log_name.replace("\\", "-").replace("/", "-").replace(":", "-").replace(" ", "-").replace("input-logs-", "").replace(".xes", "").replace(".gz", "")
     sampled_xes_log_file_path = f'input-logs/log-sampling/sampled-{basename}-{filetimestamp}.xes'
     remaining_xes_log_file_path = f'input-logs/log-sampling/remaining-{basename}-{filetimestamp}.xes'

@@ -294,22 +294,24 @@ def write_and_show_best_pn(best_island_number, input_log_name, round, generation
     fitness = pm4py.fitness_alignments(xes_log, petrinet, initial_marking, final_marking)
     precision = pm4py.precision_alignments(xes_log, petrinet, initial_marking, final_marking)
     generaliz = pm4py.generalization_tbr(xes_log, petrinet, initial_marking, final_marking)
-    #simplic = ft.structuredness(petrinet, initial_marking, final_marking)
     simplic = pm4py.simplicity_petri_net(petrinet, initial_marking, final_marking, variant='arc_degree')
     f_score = (fitness_weight + precision_weight + generalization_weight + simplicity_weight) / ((fitness_weight / fitness['log_fitness']) + (precision_weight / precision) + (generalization_weight / generaliz) + (simplicity_weight / simplic))
     print('HM: %.15f' % f_score, 'fitness: %.15f' % fitness['log_fitness'], 'precision: %.15f' % precision, 'generalization: %.15f' % generaliz, 'simplicity: %.15f' % simplic, flush=True)
-    bestone_file = bestone_file.replace("/", "-").replace(".", "-").replace("\\", "-")
+    bestone_file = bestone_file.replace("/", "-").replace(".", "-").replace("\\", "-").replace("-txt", "")
     pm4py.write_pnml(petrinet, initial_marking, final_marking, 'petri-nets/best/' + bestone_file)
-    pm4py.view_petri_net(petrinet, initial_marking, final_marking)
+    print('Discovered process model (best found solution) saved at - pnml file:', 'petri-nets/best/' + bestone_file + '.pnml')
+    pm4py.save_vis_petri_net(petrinet, initial_marking, final_marking, 'petri-nets/best/' + bestone_file + '-petri-net.png', rankdir = "LR", variant_str = "dagrejs")
+    print('Discovered process model (best found solution) saved at - petri net model:', 'petri-nets/best/' + bestone_file + '-petri-net.png')
     bpmn_model = pm4py.convert_to_bpmn(petrinet, initial_marking, final_marking)
-    pm4py.view_bpmn(bpmn_model)
+    pm4py.save_vis_bpmn(bpmn_model, 'petri-nets/best/' + bestone_file + '-bpmn.png', rankdir = "LR")
+    print('Discovered process model (best found solution) saved at - BPMN model:', 'petri-nets/best/' + bestone_file + '-bpmn.png')
     return
 
 @decorators.measure_time
 def create_petri_net(cromossome, alphabet, input_log_name, round, island, generation, cache_petri_net):
     cromossomo_hash = hash_cromossomo_petri_net(cromossome)
     raw = cache_petri_net.get(cromossomo_hash)
-    if raw is not None:                                  # cache hit
+    if raw is not None:
         net, im, fm = cloudpickle.loads(raw)
         return net, im, fm
     bpmn_xml = generate_bpmn_from_cromossome(cromossome, alphabet)
