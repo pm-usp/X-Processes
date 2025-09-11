@@ -300,7 +300,7 @@ def write_and_show_best_pn(best_island_number, input_log_name, round, generation
     bestone_file = bestone_file.replace("/", "-").replace(".", "-").replace("\\", "-").replace("-txt", "")
     pm4py.write_pnml(petrinet, initial_marking, final_marking, 'petri-nets/best/' + bestone_file)
     print('Discovered process model (best found solution) saved at - pnml file:', 'petri-nets/best/' + bestone_file + '.pnml')
-    pm4py.save_vis_petri_net(petrinet, initial_marking, final_marking, 'petri-nets/best/' + bestone_file + '-petri-net.png', rankdir = "LR", variant_str = "dagrejs")
+    pm4py.save_vis_petri_net(petrinet, initial_marking, final_marking, 'petri-nets/best/' + bestone_file + '-petri-net.png', rankdir = "LR")
     print('Discovered process model (best found solution) saved at - petri net model:', 'petri-nets/best/' + bestone_file + '-petri-net.png')
     bpmn_model = pm4py.convert_to_bpmn(petrinet, initial_marking, final_marking)
     pm4py.save_vis_bpmn(bpmn_model, 'petri-nets/best/' + bestone_file + '-bpmn.png', rankdir = "LR")
