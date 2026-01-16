@@ -1,0 +1,13 @@
+Metric_Name,input-logs\test.xes.gz_{'arc_degree': 1.0}
+arc_degree,0.8181818181818181
+structuredness,0.545455
+simple_structural_appropriateness,0.3333333333333333
+advanced_structural_appropriateness,0.9
+sequentiality_ratio,0.15384615384615385
+cross_connectivity,0.06014699463773538
+flow_hierarchy,0.7692307692307693
+separability_ratio,0.333333
+cyclicity,0.7272727272727273
+density,0.8818181818181818
+coupling,0.8472222222222222
+network_density,0.8818181818181818

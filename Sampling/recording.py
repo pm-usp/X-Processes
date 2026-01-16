@@ -1,11 +1,10 @@
 import csv
 import platform
 import os
-import decorators
-import tempfile
-import time
 import uuid
 import portalocker
+import time
+
 
 so = platform.system()
 if so == 'Linux':
@@ -14,7 +13,6 @@ if so == 'Linux':
     import errno
 
 
-@decorators.measure_time
 def write_to_locked_file(file_name, data):
     fileToOpen = open(file_name, 'a')
     while True:
@@ -32,7 +30,7 @@ def write_to_locked_file(file_name, data):
                 time.sleep(0.01)
 
 
-@decorators.measure_time
+
 def record_evolution(input_log_name, round, parameters, island_number, highest_values, fitness_evolution, alphabet, best_individual, island_start, island_end, island_duration, current_generation):
     values_of_parameters = ''                                                                                           
     for i in range(len(parameters)):                                                                                    
@@ -60,7 +58,7 @@ def record_evolution(input_log_name, round, parameters, island_number, highest_v
     return
 
 
-@decorators.measure_time
+
 def write_atomic_bestone(file_path, data, max_retries=100, base_wait=0.05):
     unique_id = uuid.uuid4().hex
     temp_path = f"{file_path}-tmp-{unique_id}"
@@ -84,7 +82,7 @@ def write_atomic_bestone(file_path, data, max_retries=100, base_wait=0.05):
             raise RuntimeError(f"Unexpected error replacing {file_path}: {e}") from e
 
 
-@decorators.measure_time
+
 def read_bestone(file_path, max_retries=100, base_wait=0.05):
     retries = 0
     while True:
@@ -93,8 +91,8 @@ def read_bestone(file_path, max_retries=100, base_wait=0.05):
                 portalocker.lock(file, portalocker.LOCK_SH)
                 lines = [line.strip() for line in file.readlines()]
                 portalocker.unlock(file)
-            if len(lines) != 4:
-                raise ValueError(f'File {file_path} has incorrect format. Expected 4 lines, got {len(lines)}.')
+            if len(lines) != 5:
+                raise ValueError(f'File {file_path} has incorrect format. Expected 5 lines, got {len(lines)}.')
             return lines
         except FileNotFoundError as e:
             raise e
@@ -108,15 +106,22 @@ def read_bestone(file_path, max_retries=100, base_wait=0.05):
             raise RuntimeError(f"Unexpected error reading {file_path}: {e}") from e
 
 
-@decorators.measure_time
-def record_bestone_atomic(island_number, highest_hm, generation, bestone_file, island_duration):
+
+def record_bestone_atomic(island_number, highest_hm, generation, bestone_file, island_duration, cromossome):
     try:
-        best_island, best_highest_hm, generation_best, total_duration = read_bestone(bestone_file)
+        best_island, best_cromossome, best_highest_hm, generation_best, total_duration = read_bestone(bestone_file)
         best_highest_hm = float(best_highest_hm)
     except (FileNotFoundError, ValueError):
-        best_island, best_highest_hm, generation_best, total_duration = None, None, None, None
-    if best_highest_hm is None or highest_hm > best_highest_hm:
-        data = [str(island_number), str(highest_hm), str(generation), str(island_duration)]
+        best_island, best_cromossome, best_highest_hm, generation_best, total_duration = None, None, None, None, None
+
+    if hasattr(cromossome, 'tolist'):
+        cromossome_data = cromossome.tolist()
     else:
-        data = [str(best_island), str(best_highest_hm), str(generation_best), str(island_duration)]
+        cromossome_data = cromossome
+    new_cromossome_str = str(cromossome_data).replace('\n', '').replace('\r', '')
+
+    if best_highest_hm is None or highest_hm > best_highest_hm:
+        data = [str(island_number), str(new_cromossome_str), str(highest_hm), str(generation), str(island_duration)]
+    else:
+        data = [str(best_island), str(best_cromossome), str(best_highest_hm), str(generation_best), str(island_duration)]
     write_atomic_bestone(bestone_file, data)
