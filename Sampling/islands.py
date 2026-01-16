@@ -1,8 +1,8 @@
 from random import randint
 from multiprocessing import Pool
-import decorators
+import os  # adicione no topo do arquivo
 
-@decorators.measure_time
+
 def nonblank_lines(f):                                                                                                  
     for l in f:                                                                                                         
         line = l.rstrip()                                                                                               
@@ -13,24 +13,24 @@ def plotting_file_creator(var):
     plot = open('output-graphs/plotting/plotting_{0}.txt'.format(var), 'w')                                             
     plot.close()                                                                                                        
 
-@decorators.measure_time
-def create_plotting_files(number_of_islands, number_of_threads):                                                        
-    p = Pool(number_of_threads)                                                                                         
-    p.map(plotting_file_creator, number_of_islands)                                                                     
-    p.close()                                                                                                           
 
-@decorators.measure_time
+def create_plotting_files(number_of_islands):
+    os.makedirs('output-graphs/plotting', exist_ok=True)
+    for i in range(number_of_islands):
+        plotting_file_creator(i)
+
+
 def set_broadcast(population, sorted_evaluated_population, island_number, percentage_of_best_individuals_for_migration_per_island, broadcast):
     all_bests = []
     for i in range(int((len(population)) * percentage_of_best_individuals_for_migration_per_island)):
         all_bests.append([population[int(sorted_evaluated_population[i][5])], [sorted_evaluated_population[i][0]], [sorted_evaluated_population[i][1]], [sorted_evaluated_population[i][2]], [sorted_evaluated_population[i][3]], [sorted_evaluated_population[i][4]], [sorted_evaluated_population[i][5]], [sorted_evaluated_population[i][6]]])
     broadcast[island_number] = all_bests
 
-@decorators.measure_time
+
 def set_broadcast_null(island_number, broadcast):     
     broadcast[island_number] = []
 
-@decorators.measure_time
+
 def pick_island(island_number, number_of_islands, migration_index, broadcast, island_sizes, percentage_of_best_individuals_for_migration_all_islands):
     picked_island = randint(0, number_of_islands - 1)
     count = 0
@@ -42,7 +42,7 @@ def pick_island(island_number, number_of_islands, migration_index, broadcast, is
             picked_island = randint(0, number_of_islands - 1)
     return picked_island
 
-@decorators.measure_time
+
 def send_individuals(population, island_number, number_of_islands, sorted_evaluated_population, messenger):
     picked_island = randint(0, number_of_islands - 1)
     count = 0
@@ -55,11 +55,11 @@ def send_individuals(population, island_number, number_of_islands, sorted_evalua
     if picked_island != -1:
         messenger[picked_island] = [sorted_evaluated_population[0][0], population[int(sorted_evaluated_population[0][5])], island_number, [sorted_evaluated_population[0][0]], [sorted_evaluated_population[0][1]], [sorted_evaluated_population[0][2]], [sorted_evaluated_population[0][3]], [sorted_evaluated_population[0][4]], [sorted_evaluated_population[0][5]], [sorted_evaluated_population[0][6]]]
 
-@decorators.measure_time
+
 def send_individuals_null(island_number, messenger):
     messenger[island_number] = [[], [], []]
 
-@decorators.measure_time
+
 def receive_individuals(population, island_number, sorted_evaluated_population, messenger, evaluated_population):
     if messenger[island_number] != [[], [], []]:
         best_fit = messenger[island_number]
@@ -81,7 +81,7 @@ def receive_individuals(population, island_number, sorted_evaluated_population, 
     else:
         return 0
 
-@decorators.measure_time
+
 def do_migration(island_population, island_number, number_of_islands, island_fitness, percentage_of_individuals_for_migration_per_island, broadcast, island_sizes, percentage_of_best_individuals_for_migration_all_islands, evaluated_population):
     migration_index = [0] * number_of_islands
     worst_gen_list = [(fitness, i) for i, fitness in enumerate(island_fitness)]
